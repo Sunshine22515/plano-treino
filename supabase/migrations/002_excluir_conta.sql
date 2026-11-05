@@ -1,5 +1,5 @@
 -- Permite que cada pessoa exclua a própria conta.
--- Rode uma vez no SQL Editor do Supabase, depois do schema.sql.
+-- Rode uma vez no SQL Editor do Supabase, depois da migração 001.
 
 -- O site não tem permissão para apagar nada em auth.users, e isso é bom.
 -- "security definer" faz esta função rodar com as permissões de quem a criou,
@@ -16,7 +16,7 @@ begin
     raise exception 'É preciso estar logado para excluir a conta.';
   end if;
 
-  -- O "on delete cascade" do schema.sql apaga junto o plano da pessoa.
+  -- O "on delete cascade" da migração 001 apaga junto o plano da pessoa.
   delete from auth.users where id = auth.uid();
 end;
 $$;

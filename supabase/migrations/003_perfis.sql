@@ -1,4 +1,4 @@
--- Nomes de usuário. Rode uma vez no SQL Editor do Supabase, depois do schema.sql.
+-- Nomes de usuário. Rode uma vez no SQL Editor do Supabase, depois da migração 002.
 -- Contas criadas antes deste arquivo não ganham nome de usuário.
 
 -- 1. A TABELA

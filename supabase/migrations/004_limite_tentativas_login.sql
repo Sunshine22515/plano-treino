@@ -1,4 +1,4 @@
--- Limite de tentativas de senha. Rode uma vez no SQL Editor do Supabase, depois do usuarios.sql.
+-- Limite de tentativas de senha. Rode uma vez no SQL Editor do Supabase, depois da migração 003.
 -- Regra: 5 senhas erradas em sequência bloqueiam o nome de usuário por 15 minutos.
 
 -- 1. A TABELA

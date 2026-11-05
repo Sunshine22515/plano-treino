@@ -13,13 +13,13 @@ O plano fica salvo na sua conta, e você o vê em qualquer aparelho.
 
 ## Como gerar o app Android
 
-O workflow `.github/workflows/gerar-apk.yml` usa o Capacitor para gerar um `.apk` de teste no GitHub, sem instalar nada no computador.
+O workflow `.github/workflows/build-android.yml` usa o Capacitor para gerar um `.apk` de teste no GitHub, sem instalar nada no computador.
 
-Ao publicar uma release, o `plano-treino.apk` é gerado e anexado a ela em alguns minutos. A etiqueta da release precisa apontar para um commit que já tenha este workflow.
+Ao publicar uma release, o arquivo `plano-treino-<versão>.apk` é gerado e anexado a ela em alguns minutos. A etiqueta da release precisa apontar para um commit que já tenha este workflow.
 
 Para gerar sem criar uma release:
 
-1. No GitHub, abra **Actions > Gerar APK > Run workflow**.
+1. No GitHub, abra **Actions > Build Android > Run workflow**.
 2. Quando terminar, baixe `plano-treino-apk` na página da execução e extraia o `.apk` do zip.
 3. Instale no celular Android, permitindo a instalação de apps de fora da Play Store.
 
@@ -28,7 +28,7 @@ Este `.apk` é de teste. Para distribuir, ele precisa de uma assinatura própria
 ## Como configurar
 
 1. Crie um projeto no [Supabase](https://supabase.com).
-2. Rode os arquivos `supabase/schema.sql`, `supabase/excluir_conta.sql`, `supabase/usuarios.sql`, `supabase/tentativas_login.sql` e `supabase/limite_cadastro.sql`, nessa ordem, no SQL Editor do projeto.
+2. Rode os arquivos de `supabase/migrations/`, na ordem dos números, no SQL Editor do projeto.
 3. Crie as Edge Functions `entrar` e `cadastrar` com o código de `supabase/functions/` e desligue a verificação de JWT das duas, porque elas rodam antes de existir uma sessão. Depois, em **Sign In / Providers**, desligue **Allow new users to sign up**, para a função `cadastrar` ser o único caminho de cadastro.
 4. Coloque o endereço do projeto e a chave publishable em `config.js`.
 5. Em **Authentication > URL Configuration**, adicione o endereço do site às URLs de redirecionamento permitidas.

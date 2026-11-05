@@ -1,4 +1,4 @@
--- Limite de novas contas. Rode uma vez no SQL Editor do Supabase, depois do tentativas_login.sql.
+-- Limite de novas contas. Rode uma vez no SQL Editor do Supabase, depois da migração 004.
 -- Regra: 5 tentativas de cadastro por hora para cada endereço de internet e 100 por dia no total.
 
 -- 1. A TABELA
