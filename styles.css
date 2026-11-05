@@ -32,9 +32,63 @@ body {
   margin: 0 auto;
 }
 
+.topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-bottom: 16px;
+}
+
 h1 {
-  margin: 0 0 16px;
+  margin: 0;
   font-size: 1.5rem;
+}
+
+.sessao {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.nome-usuario {
+  overflow-wrap: anywhere;
+  font-size: 0.875rem;
+  color: var(--texto-suave);
+}
+
+.aviso {
+  max-width: 960px;
+  margin: 0 auto 16px;
+  padding: 12px 16px;
+  border: 1px solid var(--destaque);
+  border-radius: 10px;
+}
+
+.conta {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.conta h2 {
+  margin-bottom: 16px;
+}
+
+.conta .busca {
+  margin-bottom: 12px;
+}
+
+.conta-acoes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.salvar-senha {
+  width: 100%;
 }
 
 h2 {

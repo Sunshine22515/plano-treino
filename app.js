@@ -1,7 +1,19 @@
-const CHAVE_PLANO = 'plano-treino:itens';
+const TABELA = 'plano_itens';
+const CHAVE_PLANO_LOCAL = 'plano-treino:itens';
+// O Supabase exige um e-mail em toda conta. ".invalid" é reservado e nunca recebe mensagens.
+const DOMINIO_EMAIL_INTERNO = 'plano-treino.invalid';
 const SERIES_PADRAO = 3;
 const REPETICOES_PADRAO = 12;
 const TODOS = 'Todos';
+
+const MENSAGENS_ERRO = {
+  invalid_credentials: 'Usuário ou senha incorretos.',
+  email_not_confirmed: 'Confirme seu e-mail pelo link que enviamos antes de entrar.',
+  weak_password: 'Essa senha é fraca. Escolha uma senha mais forte.',
+  over_email_send_rate_limit: 'Muitos e-mails enviados. Espere alguns minutos e tente de novo.',
+  over_request_rate_limit: 'Muitas tentativas. Espere alguns minutos e tente de novo.',
+  user_already_exists: 'Esse nome de usuário já está em uso.'
+};
 
 const CATALOGO = {
   Peito: ['Supino reto', 'Supino inclinado', 'Supino declinado', 'Crucifixo com halteres', 'Crossover', 'Flexão de braço', 'Peck deck'],
@@ -18,6 +30,23 @@ const EXERCICIOS = Object.entries(CATALOGO).flatMap(([grupo, nomes]) =>
   nomes.map(nome => ({ nome, grupo }))
 );
 
+const aviso = document.getElementById('aviso');
+const telasConta = {
+  entrar: document.getElementById('tela-entrar'),
+  cadastro: document.getElementById('tela-cadastro'),
+  recuperar: document.getElementById('tela-recuperar')
+};
+const telaApp = document.getElementById('tela-app');
+const formEntrar = document.getElementById('form-entrar');
+const formCadastro = document.getElementById('form-cadastro');
+const formRecuperar = document.getElementById('form-recuperar');
+const telaNovaSenha = document.getElementById('tela-nova-senha');
+const formNovaSenha = document.getElementById('form-nova-senha');
+const campoNovaSenha = document.getElementById('nova-senha');
+const botaoExcluirConta = document.getElementById('excluir-conta');
+const sessao = document.getElementById('sessao');
+const nomeUsuario = document.getElementById('nome-usuario');
+const botaoSair = document.getElementById('sair');
 const plano = document.getElementById('plano');
 const planoVazio = document.getElementById('plano-vazio');
 const totalPlano = document.getElementById('total-plano');
@@ -28,11 +57,28 @@ const totalCatalogo = document.getElementById('total-catalogo');
 const busca = document.getElementById('busca');
 const grupos = document.getElementById('grupos');
 
-let itens = lerPlano();
+let cliente = null;
+let usuario = null;
+let itens = [];
 let grupoAtivo = TODOS;
+let ocupado = false;
+let modoRecuperacao = false;
+let telaContaAtiva = 'entrar';
+let confirmandoCadastro = false;
+let encerrandoConfirmacao = false;
+
+function mostrarAviso(texto) {
+  aviso.textContent = texto;
+  aviso.hidden = !texto;
+}
+
+function mensagemDoErro(erro) {
+  console.error(erro);
+  return MENSAGENS_ERRO[erro.code] || 'Algo deu errado. Confira sua conexão e tente de novo.';
+}
 
 function buscarExercicio(nome) {
-  return EXERCICIOS.find(exercicio => exercicio.nome === nome);
+  return EXERCICIOS.find(exercicio => exercicio.nome === nome) || { nome, grupo: 'Outros' };
 }
 
 function limitar(valor, padrao) {
@@ -40,34 +86,36 @@ function limitar(valor, padrao) {
   return numero >= 1 ? Math.min(numero, 99) : padrao;
 }
 
-function lerPlano() {
+// Plano antigo, salvo só no navegador. É usado uma vez, para levar os dados para a conta.
+function lerPlanoLocal() {
   try {
-    const salvos = JSON.parse(localStorage.getItem(CHAVE_PLANO));
+    const salvos = JSON.parse(localStorage.getItem(CHAVE_PLANO_LOCAL));
     if (!Array.isArray(salvos)) {
       return [];
     }
     return salvos
-      .filter(item => item && buscarExercicio(item.nome))
-      .map(item => ({
-        nome: item.nome,
+      .filter(item => item && EXERCICIOS.some(exercicio => exercicio.nome === item.nome))
+      .map((item, indice) => ({
+        exercicio: item.nome,
         series: limitar(item.series, SERIES_PADRAO),
-        repeticoes: limitar(item.repeticoes, REPETICOES_PADRAO)
+        repeticoes: limitar(item.repeticoes, REPETICOES_PADRAO),
+        posicao: indice
       }));
   } catch {
     return [];
   }
 }
 
-function salvarPlano() {
+function apagarPlanoLocal() {
   try {
-    localStorage.setItem(CHAVE_PLANO, JSON.stringify(itens));
+    localStorage.removeItem(CHAVE_PLANO_LOCAL);
   } catch {
-    // Sem armazenamento, o plano continua funcionando até fechar a página.
+    // Sem armazenamento, não há plano local para apagar.
   }
 }
 
 function estaNoPlano(nome) {
-  return itens.some(item => item.nome === nome);
+  return itens.some(item => item.exercicio === nome);
 }
 
 // Ignora acentos e maiúsculas, para "triceps" encontrar "Tríceps".
@@ -92,7 +140,7 @@ function criarInfo(exercicio) {
   return info;
 }
 
-function criarCampo(rotulo, item, chave, padrao) {
+function criarCampo(rotulo, item, coluna, padrao) {
   const campo = document.createElement('label');
   campo.className = 'campo';
   campo.textContent = rotulo;
@@ -101,12 +149,24 @@ function criarCampo(rotulo, item, chave, padrao) {
   entrada.inputMode = 'numeric';
   entrada.min = '1';
   entrada.max = '99';
-  entrada.value = String(item[chave]);
-  entrada.setAttribute('aria-label', `${rotulo} de ${item.nome}`);
-  entrada.addEventListener('change', () => {
-    item[chave] = limitar(entrada.value, padrao);
-    entrada.value = String(item[chave]);
-    salvarPlano();
+  entrada.value = String(item[coluna]);
+  entrada.setAttribute('aria-label', `${rotulo} de ${item.exercicio}`);
+  entrada.addEventListener('change', async () => {
+    const anterior = item[coluna];
+    const valor = limitar(entrada.value, padrao);
+    entrada.value = String(valor);
+    const { error } = await cliente
+      .from(TABELA)
+      .update({ [coluna]: valor })
+      .eq('user_id', usuario.id)
+      .eq('exercicio', item.exercicio);
+    if (error) {
+      entrada.value = String(anterior);
+      mostrarAviso(mensagemDoErro(error));
+      return;
+    }
+    item[coluna] = valor;
+    mostrarAviso('');
   });
   campo.append(entrada);
   return campo;
@@ -127,10 +187,10 @@ function desenharPlano() {
     const remover = document.createElement('button');
     remover.type = 'button';
     remover.textContent = 'Remover';
-    remover.setAttribute('aria-label', `Remover ${item.nome} do plano`);
-    remover.addEventListener('click', () => alternarExercicio(item.nome));
+    remover.setAttribute('aria-label', `Remover ${item.exercicio} do plano`);
+    remover.addEventListener('click', () => alternarExercicio(item.exercicio));
 
-    linha.append(criarInfo(buscarExercicio(item.nome)), numeros, remover);
+    linha.append(criarInfo(buscarExercicio(item.exercicio)), numeros, remover);
     return linha;
   }));
 
@@ -143,6 +203,11 @@ function atualizarBotao(botao, nome) {
   const noPlano = estaNoPlano(nome);
   botao.textContent = noPlano ? 'Remover' : 'Adicionar';
   botao.setAttribute('aria-pressed', String(noPlano));
+}
+
+function atualizarBotoesCatalogo() {
+  // Atualiza os botões no lugar, para o foco do teclado não se perder.
+  catalogo.querySelectorAll('.adicionar').forEach(botao => atualizarBotao(botao, botao.dataset.nome));
 }
 
 function desenharCatalogo() {
@@ -172,16 +237,32 @@ function desenharCatalogo() {
   totalCatalogo.textContent = plural(visiveis.length, 'exercício', 'exercícios');
 }
 
-function alternarExercicio(nome) {
-  if (estaNoPlano(nome)) {
-    itens = itens.filter(item => item.nome !== nome);
-  } else {
-    itens.push({ nome, series: SERIES_PADRAO, repeticoes: REPETICOES_PADRAO });
+async function alternarExercicio(nome) {
+  if (ocupado) {
+    return;
   }
-  salvarPlano();
+  ocupado = true;
+  // O user_id não é enviado: o banco preenche com auth.uid() e o RLS confere o dono.
+  const { error } = estaNoPlano(nome)
+    ? await cliente.from(TABELA).delete().eq('user_id', usuario.id).eq('exercicio', nome)
+    : await cliente.from(TABELA).insert(novoItem(nome));
+  ocupado = false;
+
+  if (error) {
+    mostrarAviso(mensagemDoErro(error));
+    return;
+  }
+  itens = estaNoPlano(nome)
+    ? itens.filter(item => item.exercicio !== nome)
+    : [...itens, novoItem(nome)];
+  mostrarAviso('');
   desenharPlano();
-  // Atualiza os botões no lugar, para o foco do teclado não se perder.
-  catalogo.querySelectorAll('.adicionar').forEach(botao => atualizarBotao(botao, botao.dataset.nome));
+  atualizarBotoesCatalogo();
+}
+
+function novoItem(exercicio) {
+  const posicao = itens.reduce((maior, item) => Math.max(maior, item.posicao + 1), 0);
+  return { exercicio, series: SERIES_PADRAO, repeticoes: REPETICOES_PADRAO, posicao };
 }
 
 function desenharGrupos() {
@@ -202,18 +283,251 @@ function desenharGrupos() {
   }));
 }
 
+async function carregarPlano(idUsuario) {
+  const { data, error } = await cliente
+    .from(TABELA)
+    .select('exercicio, series, repeticoes, posicao')
+    .order('posicao');
+
+  // A pessoa pode ter saído enquanto os dados vinham do servidor.
+  if (usuario?.id !== idUsuario) {
+    return;
+  }
+  if (error) {
+    itens = [];
+    mostrarAviso(mensagemDoErro(error));
+  } else {
+    itens = data;
+    const local = lerPlanoLocal();
+    if (itens.length === 0 && local.length > 0) {
+      const { error: erroLocal } = await cliente.from(TABELA).insert(local);
+      if (erroLocal) {
+        mostrarAviso(mensagemDoErro(erroLocal));
+      } else {
+        itens = local;
+        apagarPlanoLocal();
+      }
+    }
+  }
+  desenharPlano();
+  desenharCatalogo();
+}
+
+function mostrarTelas() {
+  Object.entries(telasConta).forEach(([nome, tela]) => {
+    tela.hidden = Boolean(usuario) || nome !== telaContaAtiva;
+  });
+  telaNovaSenha.hidden = !usuario || !modoRecuperacao;
+  telaApp.hidden = !usuario || modoRecuperacao;
+  sessao.hidden = !usuario;
+  nomeUsuario.textContent = usuario?.user_metadata?.usuario ?? '';
+}
+
+// O cadastro e o link de confirmação já chegam logados. Encerramos essa sessão para a pessoa entrar pelo login.
+async function encerrarSessaoDaConfirmacao() {
+  if (encerrandoConfirmacao) {
+    return;
+  }
+  encerrandoConfirmacao = true;
+  await cliente.auth.signOut({ scope: 'local' });
+  confirmandoCadastro = false;
+  encerrandoConfirmacao = false;
+  telaContaAtiva = 'entrar';
+  aplicarSessao(null);
+  mostrarAviso('Sua conta está pronta! Entre com seu usuário e senha.');
+}
+
+function aplicarSessao(novaSessao) {
+  if (confirmandoCadastro && novaSessao) {
+    encerrarSessaoDaConfirmacao();
+    return;
+  }
+  // Link inválido não traz sessão, e o próximo login precisa funcionar normalmente.
+  confirmandoCadastro = false;
+
+  const novoUsuario = novaSessao?.user ?? null;
+  const mudou = novoUsuario?.id !== usuario?.id;
+  usuario = novoUsuario;
+  if (!usuario) {
+    modoRecuperacao = false;
+  }
+  mostrarTelas();
+
+  if (!usuario) {
+    itens = [];
+  } else if (mudou) {
+    mostrarAviso('');
+    carregarPlano(usuario.id);
+  }
+}
+
+function iniciar() {
+  if (!USAR_EMAIL) {
+    document.getElementById('campo-email').remove();
+    document.getElementById('esqueci-senha').remove();
+  }
+  if (!window.supabase) {
+    mostrarAviso('Não foi possível carregar o app. Confira sua conexão e recarregue a página.');
+    return;
+  }
+  if (!SUPABASE_URL.startsWith('https://')) {
+    mostrarAviso('Falta configurar o Supabase no arquivo config.js.');
+    return;
+  }
+  // Lido antes de criar o cliente, porque ele limpa esse trecho do endereço.
+  confirmandoCadastro = new URLSearchParams(location.hash.slice(1)).get('type') === 'signup';
+  cliente = window.supabase.createClient(SUPABASE_URL, SUPABASE_CHAVE_PUBLICA);
+  // O setTimeout evita chamar o Supabase de dentro deste aviso, o que pode travar o login.
+  cliente.auth.onAuthStateChange((evento, novaSessao) => {
+    // Este evento avisa que a pessoa chegou pelo link de recuperação de senha.
+    if (evento === 'PASSWORD_RECOVERY') {
+      modoRecuperacao = true;
+    }
+    setTimeout(() => aplicarSessao(novaSessao));
+  });
+}
+
+document.querySelectorAll('[data-ir-para]').forEach(botao => {
+  botao.addEventListener('click', () => {
+    telaContaAtiva = botao.dataset.irPara;
+    mostrarAviso('');
+    mostrarTelas();
+  });
+});
+
+// O login passa pela função "entrar", no servidor, porque só ela pode descobrir o e-mail.
+formEntrar.addEventListener('submit', async evento => {
+  evento.preventDefault();
+  const { data, error } = await cliente.functions.invoke('entrar', {
+    body: {
+      usuario: document.getElementById('entrar-usuario').value,
+      senha: document.getElementById('entrar-senha').value
+    }
+  });
+  if (error) {
+    // Em respostas de erro, o motivo vem no corpo da resposta da função.
+    const corpo = await error.context?.json?.()?.catch(() => null);
+    mostrarAviso(mensagemDoErro(corpo?.code ? corpo : error));
+    return;
+  }
+  const { error: erroSessao } = await cliente.auth.setSession(data);
+  if (erroSessao) {
+    mostrarAviso(mensagemDoErro(erroSessao));
+    return;
+  }
+  formEntrar.reset();
+  mostrarAviso('');
+});
+
+formCadastro.addEventListener('submit', async evento => {
+  evento.preventDefault();
+  const nome = document.getElementById('cadastro-usuario').value.trim().toLowerCase();
+  const senha = document.getElementById('cadastro-senha').value;
+  if (senha !== document.getElementById('cadastro-confirmar').value) {
+    mostrarAviso('As senhas não são iguais.');
+    return;
+  }
+
+  const { data: disponivel, error: erroNome } = await cliente.rpc('usuario_disponivel', { nome });
+  if (erroNome) {
+    mostrarAviso(mensagemDoErro(erroNome));
+    return;
+  }
+  if (!disponivel) {
+    mostrarAviso('Esse nome de usuário já está em uso.');
+    return;
+  }
+
+  // Sem confirmação de e-mail, o cadastro já devolve uma sessão, que precisa ser encerrada.
+  confirmandoCadastro = true;
+  // O gatilho do banco lê o nome enviado em "data" e cria o perfil junto com a conta.
+  const { data, error } = await cliente.auth.signUp({
+    email: USAR_EMAIL ? document.getElementById('cadastro-email').value.trim() : `${nome}@${DOMINIO_EMAIL_INTERNO}`,
+    password: senha,
+    options: {
+      data: { usuario: nome },
+      emailRedirectTo: location.origin + location.pathname
+    }
+  });
+  if (error) {
+    confirmandoCadastro = false;
+    mostrarAviso(mensagemDoErro(error));
+    return;
+  }
+  formCadastro.reset();
+  telaContaAtiva = 'entrar';
+  mostrarTelas();
+  // Sem sessão, o Supabase está esperando a confirmação do e-mail.
+  if (!data.session) {
+    confirmandoCadastro = false;
+    mostrarAviso('Enviamos um link de confirmação para o seu e-mail. Se esse e-mail já tiver conta, entre com o seu usuário.');
+  }
+});
+
+formRecuperar.addEventListener('submit', async evento => {
+  evento.preventDefault();
+  const { error } = await cliente.auth.resetPasswordForEmail(document.getElementById('recuperar-email').value.trim(), {
+    redirectTo: location.origin + location.pathname
+  });
+  if (error) {
+    mostrarAviso(mensagemDoErro(error));
+    return;
+  }
+  formRecuperar.reset();
+  // A mensagem é a mesma com ou sem conta, para não revelar quais e-mails estão cadastrados.
+  mostrarAviso('Se esse e-mail tiver conta, enviamos um link para criar uma nova senha.');
+});
+
+formNovaSenha.addEventListener('submit', async evento => {
+  evento.preventDefault();
+  const { error } = await cliente.auth.updateUser({ password: campoNovaSenha.value });
+  if (error) {
+    mostrarAviso(mensagemDoErro(error));
+    return;
+  }
+  formNovaSenha.reset();
+  modoRecuperacao = false;
+  mostrarTelas();
+  mostrarAviso('Senha alterada.');
+});
+
+botaoExcluirConta.addEventListener('click', async () => {
+  if (!confirm('Excluir sua conta e todo o seu plano? Isso não pode ser desfeito.')) {
+    return;
+  }
+  const { error } = await cliente.rpc('excluir_conta');
+  if (error) {
+    mostrarAviso(mensagemDoErro(error));
+    return;
+  }
+  // A conta já não existe no servidor, então basta limpar a sessão deste navegador.
+  await cliente.auth.signOut({ scope: 'local' });
+  mostrarAviso('Sua conta foi excluída.');
+});
+
+botaoSair.addEventListener('click', async () => {
+  const { error } = await cliente.auth.signOut();
+  mostrarAviso(error ? mensagemDoErro(error) : '');
+});
+
 busca.addEventListener('input', desenharCatalogo);
 
-limparPlano.addEventListener('click', () => {
+limparPlano.addEventListener('click', async () => {
   if (!confirm('Remover todos os exercícios do plano?')) {
     return;
   }
+  const { error } = await cliente.from(TABELA).delete().eq('user_id', usuario.id);
+  if (error) {
+    mostrarAviso(mensagemDoErro(error));
+    return;
+  }
   itens = [];
-  salvarPlano();
+  mostrarAviso('');
   desenharPlano();
-  desenharCatalogo();
+  atualizarBotoesCatalogo();
 });
 
 desenharGrupos();
 desenharPlano();
 desenharCatalogo();
+iniciar();
