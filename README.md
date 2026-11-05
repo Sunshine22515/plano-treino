@@ -15,6 +15,10 @@ O plano fica salvo na sua conta, e você o vê em qualquer aparelho.
 
 O workflow `.github/workflows/gerar-apk.yml` usa o Capacitor para gerar um `.apk` de teste no GitHub, sem instalar nada no computador.
 
+Ao publicar uma release, o `plano-treino.apk` é gerado e anexado a ela em alguns minutos. A etiqueta da release precisa apontar para um commit que já tenha este workflow.
+
+Para gerar sem criar uma release:
+
 1. No GitHub, abra **Actions > Gerar APK > Run workflow**.
 2. Quando terminar, baixe `plano-treino-apk` na página da execução e extraia o `.apk` do zip.
 3. Instale no celular Android, permitindo a instalação de apps de fora da Play Store.

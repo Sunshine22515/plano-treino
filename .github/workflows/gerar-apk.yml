@@ -1,11 +1,15 @@
-# Gera um .apk de teste. Só roda quando alguém pede, pela aba Actions ou com "gh workflow run".
+# Gera um .apk de teste quando alguém pede, pela aba Actions ou com "gh workflow run".
+# Ao publicar uma release, gera o .apk e o anexa a ela.
 name: Gerar APK
 
 on:
   workflow_dispatch:
+  release:
+    types: [published]
 
+# "write" permite anexar o arquivo à release. O token só vale durante esta execução.
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   apk:
@@ -47,3 +51,13 @@ jobs:
           name: plano-treino-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+
+      # Este passo só roda em releases. O nome da etiqueta entra por variável, nunca direto no comando.
+      - name: Anexar o .apk à release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ETIQUETA: ${{ github.event.release.tag_name }}
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk plano-treino.apk
+          gh release upload "$ETIQUETA" plano-treino.apk --clobber
