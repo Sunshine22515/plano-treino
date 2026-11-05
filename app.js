@@ -1,8 +1,5 @@
 const TABELA = 'plano_itens';
 const CHAVE_PLANO_LOCAL = 'plano-treino:itens';
-// O Supabase exige um e-mail em toda conta. ".invalid" é reservado e nunca recebe mensagens.
-// A parte antes do @ é aleatória: se viesse do usuário, daria para pular o limite de tentativas da função "entrar".
-const DOMINIO_EMAIL_INTERNO = 'plano-treino.invalid';
 const SERIES_PADRAO = 3;
 const REPETICOES_PADRAO = 12;
 const TODOS = 'Todos';
@@ -16,7 +13,10 @@ const MENSAGENS_ERRO = {
   over_email_send_rate_limit: 'Muitos e-mails enviados. Espere alguns minutos e tente de novo.',
   over_request_rate_limit: 'Muitas tentativas. Espere alguns minutos e tente de novo.',
   user_already_exists: 'Esse nome de usuário já está em uso.',
-  muitas_tentativas: 'Muitas tentativas com esse usuário. Espere 15 minutos e tente de novo.'
+  muitas_tentativas: 'Muitas tentativas com esse usuário. Espere 15 minutos e tente de novo.',
+  muitos_cadastros: 'Muitas contas criadas em pouco tempo. Tente de novo mais tarde.',
+  usuario_invalido: 'O nome de usuário precisa ter de 3 a 20 letras sem acento, números ou _, sem espaços.',
+  senha_invalida: 'A senha precisa ter pelo menos 8 caracteres e não pode ser longa demais.'
 };
 
 const CATALOGO = {
@@ -114,10 +114,10 @@ function mensagemDoErro(erro) {
   return MENSAGENS_ERRO[erro.code] || `Algo deu errado (${erro.code || erro.message}). Confira sua conexão e tente de novo.`;
 }
 
-// Usa getRandomValues porque crypto.randomUUID não existe em todos os navegadores de apps Android.
-function gerarIdAleatorio() {
-  const bytes = crypto.getRandomValues(new Uint8Array(16));
-  return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+// Em respostas de erro de uma função do servidor, o motivo vem no corpo da resposta.
+async function mensagemDaFuncao(erro) {
+  const corpo = await erro.context?.json?.()?.catch(() => null);
+  return mensagemDoErro(corpo?.code ? corpo : erro);
 }
 
 function buscarExercicio(nome) {
@@ -450,9 +450,7 @@ aoEnviar(formEntrar, async () => {
     body: { usuario: nome, senha }
   });
   if (error) {
-    // Em respostas de erro, o motivo vem no corpo da resposta da função.
-    const corpo = await error.context?.json?.()?.catch(() => null);
-    mostrarAviso(mensagemDoErro(corpo?.code ? corpo : error));
+    mostrarAviso(await mensagemDaFuncao(error));
     return;
   }
   const { error: erroSessao } = await cliente.auth.setSession(data);
@@ -484,6 +482,22 @@ aoEnviar(formCadastro, async () => {
     return;
   }
 
+  // Sem e-mail, o cadastro passa pela função "cadastrar", que aplica o limite de novas contas.
+  if (!USAR_EMAIL) {
+    const { error } = await cliente.functions.invoke('cadastrar', {
+      body: { usuario: nome, senha }
+    });
+    if (error) {
+      mostrarAviso(await mensagemDaFuncao(error));
+      return;
+    }
+    formCadastro.reset();
+    telaContaAtiva = 'entrar';
+    mostrarTelas();
+    mostrarAviso('Sua conta está pronta! Entre com seu usuário e senha.');
+    return;
+  }
+
   const { data: disponivel, error: erroNome } = await cliente.rpc('usuario_disponivel', { nome });
   if (erroNome) {
     mostrarAviso(mensagemDoErro(erroNome));
@@ -494,11 +508,11 @@ aoEnviar(formCadastro, async () => {
     return;
   }
 
-  // Sem confirmação de e-mail, o cadastro já devolve uma sessão, que precisa ser encerrada.
+  // Se a confirmação de e-mail estiver desligada, o cadastro já devolve uma sessão, que precisa ser encerrada.
   confirmandoCadastro = true;
   // O gatilho do banco lê o nome enviado em "data" e cria o perfil junto com a conta.
   const { data, error } = await cliente.auth.signUp({
-    email: USAR_EMAIL ? document.getElementById('cadastro-email').value.trim() : `${gerarIdAleatorio()}@${DOMINIO_EMAIL_INTERNO}`,
+    email: document.getElementById('cadastro-email').value.trim(),
     password: senha,
     options: {
       data: { usuario: nome },

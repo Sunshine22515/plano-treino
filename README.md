@@ -28,8 +28,8 @@ Este `.apk` é de teste. Para distribuir, ele precisa de uma assinatura própria
 ## Como configurar
 
 1. Crie um projeto no [Supabase](https://supabase.com).
-2. Rode os arquivos `supabase/schema.sql`, `supabase/excluir_conta.sql`, `supabase/usuarios.sql` e `supabase/tentativas_login.sql`, nessa ordem, no SQL Editor do projeto.
-3. Crie a Edge Function `entrar` com o código de `supabase/functions/entrar/index.ts` e desligue a verificação de JWT dela, porque o login acontece antes de existir uma sessão.
+2. Rode os arquivos `supabase/schema.sql`, `supabase/excluir_conta.sql`, `supabase/usuarios.sql`, `supabase/tentativas_login.sql` e `supabase/limite_cadastro.sql`, nessa ordem, no SQL Editor do projeto.
+3. Crie as Edge Functions `entrar` e `cadastrar` com o código de `supabase/functions/` e desligue a verificação de JWT das duas, porque elas rodam antes de existir uma sessão. Depois, em **Sign In / Providers**, desligue **Allow new users to sign up**, para a função `cadastrar` ser o único caminho de cadastro.
 4. Coloque o endereço do projeto e a chave publishable em `config.js`.
 5. Em **Authentication > URL Configuration**, adicione o endereço do site às URLs de redirecionamento permitidas.
 6. Sirva a pasta por um servidor web. O link de confirmação do e-mail não funciona com o arquivo aberto direto.
