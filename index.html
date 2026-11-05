@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Timer de Descanso</title>
+  <meta name="description" content="Timer de descanso entre séries.">
+  <meta name="theme-color" content="#101411">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app">
+    <h1>Timer de Descanso</h1>
+
+    <p id="tempo" class="tempo" role="timer" aria-live="off">1:30</p>
+    <p id="status" class="status" role="status">Pronto para começar</p>
+
+    <div class="presets" role="group" aria-label="Duração do descanso">
+      <button type="button" class="preset" data-segundos="30">30s</button>
+      <button type="button" class="preset" data-segundos="60">1min</button>
+      <button type="button" class="preset" data-segundos="90">1min30</button>
+      <button type="button" class="preset" data-segundos="120">2min</button>
+      <button type="button" class="preset" data-segundos="180">3min</button>
+    </div>
+
+    <div class="acoes">
+      <button type="button" id="iniciar" class="principal">Iniciar</button>
+      <button type="button" id="zerar">Zerar</button>
+    </div>
+
+    <div class="series">
+      <span>Séries feitas: <strong id="contador">0</strong></span>
+      <button type="button" id="zerar-series">Zerar séries</button>
+    </div>
+  </main>
+
+  <footer class="rodape">v0.1.0</footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
