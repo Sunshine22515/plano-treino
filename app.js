@@ -114,6 +114,12 @@ function mensagemDoErro(erro) {
   return MENSAGENS_ERRO[erro.code] || `Algo deu errado (${erro.code || erro.message}). Confira sua conexão e tente de novo.`;
 }
 
+// Usa getRandomValues porque crypto.randomUUID não existe em todos os navegadores de apps Android.
+function gerarIdAleatorio() {
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
 function buscarExercicio(nome) {
   return EXERCICIOS.find(exercicio => exercicio.nome === nome) || { nome, grupo: 'Outros' };
 }
@@ -492,7 +498,7 @@ aoEnviar(formCadastro, async () => {
   confirmandoCadastro = true;
   // O gatilho do banco lê o nome enviado em "data" e cria o perfil junto com a conta.
   const { data, error } = await cliente.auth.signUp({
-    email: USAR_EMAIL ? document.getElementById('cadastro-email').value.trim() : `${crypto.randomUUID()}@${DOMINIO_EMAIL_INTERNO}`,
+    email: USAR_EMAIL ? document.getElementById('cadastro-email').value.trim() : `${gerarIdAleatorio()}@${DOMINIO_EMAIL_INTERNO}`,
     password: senha,
     options: {
       data: { usuario: nome },
