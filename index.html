@@ -21,7 +21,7 @@
 
   <section id="tela-entrar" class="painel conta" aria-labelledby="titulo-entrar" hidden>
     <h2 id="titulo-entrar">Entre na sua conta</h2>
-    <form id="form-entrar">
+    <form id="form-entrar" novalidate>
       <label class="busca-rotulo" for="entrar-usuario">Nome de usuário</label>
       <input type="text" id="entrar-usuario" class="busca" autocomplete="username" autocapitalize="none" spellcheck="false" required>
       <label class="busca-rotulo" for="entrar-senha">Senha</label>
@@ -36,9 +36,9 @@
 
   <section id="tela-cadastro" class="painel conta" aria-labelledby="titulo-cadastro" hidden>
     <h2 id="titulo-cadastro">Crie sua conta</h2>
-    <form id="form-cadastro">
+    <form id="form-cadastro" novalidate>
       <label class="busca-rotulo" for="cadastro-usuario">Nome de usuário (3 a 20 letras, números ou _)</label>
-      <input type="text" id="cadastro-usuario" class="busca" autocomplete="username" autocapitalize="none" spellcheck="false" pattern="[A-Za-z0-9_]{3,20}" title="De 3 a 20 letras sem acento, números ou _" required>
+      <input type="text" id="cadastro-usuario" class="busca" autocomplete="username" autocapitalize="none" spellcheck="false" required>
       <div id="campo-email">
         <label class="busca-rotulo" for="cadastro-email">E-mail (só para confirmações)</label>
         <input type="email" id="cadastro-email" class="busca" autocomplete="email" required>
@@ -54,7 +54,7 @@
 
   <section id="tela-recuperar" class="painel conta" aria-labelledby="titulo-recuperar" hidden>
     <h2 id="titulo-recuperar">Recupere sua senha</h2>
-    <form id="form-recuperar">
+    <form id="form-recuperar" novalidate>
       <label class="busca-rotulo" for="recuperar-email">E-mail da conta</label>
       <input type="email" id="recuperar-email" class="busca" autocomplete="email" required>
       <button type="submit" class="adicionar salvar-senha">Enviar link</button>
@@ -64,7 +64,7 @@
 
   <section id="tela-nova-senha" class="painel conta" aria-labelledby="titulo-nova-senha" hidden>
     <h2 id="titulo-nova-senha">Crie uma nova senha</h2>
-    <form id="form-nova-senha">
+    <form id="form-nova-senha" novalidate>
       <label class="busca-rotulo" for="nova-senha">Nova senha (mínimo de 8 caracteres)</label>
       <input type="password" id="nova-senha" class="busca" autocomplete="new-password" minlength="8" required>
       <button type="submit" class="adicionar salvar-senha">Salvar nova senha</button>
@@ -96,7 +96,7 @@
     </section>
   </main>
 
-  <footer class="rodape">v0.1.0</footer>
+  <footer class="rodape">v0.2.0</footer>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js" integrity="sha384-TcHRA3zBbn+Lexh5n+Oil4guNPOS3rjNDpGRAN46u/s/mB2IZ50ceC6TYDU2yvgK" crossorigin="anonymous"></script>
   <script src="config.js"></script>

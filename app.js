@@ -6,6 +6,8 @@ const DOMINIO_EMAIL_INTERNO = 'plano-treino.invalid';
 const SERIES_PADRAO = 3;
 const REPETICOES_PADRAO = 12;
 const TODOS = 'Todos';
+const TEMPO_LIMITE_MS = 25000;
+const TAMANHO_MINIMO_SENHA = 8;
 
 const MENSAGENS_ERRO = {
   invalid_credentials: 'Usuário ou senha incorretos.',
@@ -72,11 +74,44 @@ let encerrandoConfirmacao = false;
 function mostrarAviso(texto) {
   aviso.textContent = texto;
   aviso.hidden = !texto;
+  // No celular, o botão pode estar longe do topo, onde o aviso aparece.
+  if (texto) {
+    aviso.scrollIntoView({ block: 'center' });
+  }
+}
+
+// Em todo formulário: o botão mostra que está esperando, e nenhum erro passa sem aviso.
+function aoEnviar(form, acao) {
+  form.addEventListener('submit', async evento => {
+    evento.preventDefault();
+    const botao = form.querySelector('[type="submit"]');
+    if (botao.disabled) {
+      return;
+    }
+    const texto = botao.textContent;
+    botao.disabled = true;
+    botao.textContent = 'Aguarde...';
+    let limite;
+    const tempoEsgotado = new Promise((_resolver, rejeitar) => {
+      limite = setTimeout(() => rejeitar(new Error('Tempo esgotado')), TEMPO_LIMITE_MS);
+    });
+    try {
+      await Promise.race([acao(), tempoEsgotado]);
+    } catch (erro) {
+      confirmandoCadastro = false;
+      mostrarAviso(mensagemDoErro(erro));
+    } finally {
+      clearTimeout(limite);
+      botao.disabled = false;
+      botao.textContent = texto;
+    }
+  });
 }
 
 function mensagemDoErro(erro) {
   console.error(erro);
-  return MENSAGENS_ERRO[erro.code] || 'Algo deu errado. Confira sua conexão e tente de novo.';
+  // O código ajuda a identificar o problema no celular, onde não há console para ler.
+  return MENSAGENS_ERRO[erro.code] || `Algo deu errado (${erro.code || erro.message}). Confira sua conexão e tente de novo.`;
 }
 
 function buscarExercicio(nome) {
@@ -398,13 +433,15 @@ document.querySelectorAll('[data-ir-para]').forEach(botao => {
 });
 
 // O login passa pela função "entrar", no servidor, porque só ela pode descobrir o e-mail.
-formEntrar.addEventListener('submit', async evento => {
-  evento.preventDefault();
+aoEnviar(formEntrar, async () => {
+  const nome = document.getElementById('entrar-usuario').value.trim();
+  const senha = document.getElementById('entrar-senha').value;
+  if (!nome || !senha) {
+    mostrarAviso('Preencha o nome de usuário e a senha.');
+    return;
+  }
   const { data, error } = await cliente.functions.invoke('entrar', {
-    body: {
-      usuario: document.getElementById('entrar-usuario').value,
-      senha: document.getElementById('entrar-senha').value
-    }
+    body: { usuario: nome, senha }
   });
   if (error) {
     // Em respostas de erro, o motivo vem no corpo da resposta da função.
@@ -421,10 +458,21 @@ formEntrar.addEventListener('submit', async evento => {
   mostrarAviso('');
 });
 
-formCadastro.addEventListener('submit', async evento => {
-  evento.preventDefault();
+aoEnviar(formCadastro, async () => {
   const nome = document.getElementById('cadastro-usuario').value.trim().toLowerCase();
   const senha = document.getElementById('cadastro-senha').value;
+  if (!/^[a-z0-9_]{3,20}$/.test(nome)) {
+    mostrarAviso('O nome de usuário precisa ter de 3 a 20 letras sem acento, números ou _, sem espaços.');
+    return;
+  }
+  if (USAR_EMAIL && !document.getElementById('cadastro-email').checkValidity()) {
+    mostrarAviso('Digite um e-mail válido.');
+    return;
+  }
+  if (senha.length < TAMANHO_MINIMO_SENHA) {
+    mostrarAviso(`A senha precisa ter pelo menos ${TAMANHO_MINIMO_SENHA} caracteres.`);
+    return;
+  }
   if (senha !== document.getElementById('cadastro-confirmar').value) {
     mostrarAviso('As senhas não são iguais.');
     return;
@@ -466,9 +514,13 @@ formCadastro.addEventListener('submit', async evento => {
   }
 });
 
-formRecuperar.addEventListener('submit', async evento => {
-  evento.preventDefault();
-  const { error } = await cliente.auth.resetPasswordForEmail(document.getElementById('recuperar-email').value.trim(), {
+aoEnviar(formRecuperar, async () => {
+  const campo = document.getElementById('recuperar-email');
+  if (!campo.checkValidity()) {
+    mostrarAviso('Digite um e-mail válido.');
+    return;
+  }
+  const { error } = await cliente.auth.resetPasswordForEmail(campo.value.trim(), {
     redirectTo: location.origin + location.pathname
   });
   if (error) {
@@ -480,8 +532,11 @@ formRecuperar.addEventListener('submit', async evento => {
   mostrarAviso('Se esse e-mail tiver conta, enviamos um link para criar uma nova senha.');
 });
 
-formNovaSenha.addEventListener('submit', async evento => {
-  evento.preventDefault();
+aoEnviar(formNovaSenha, async () => {
+  if (campoNovaSenha.value.length < TAMANHO_MINIMO_SENHA) {
+    mostrarAviso(`A senha precisa ter pelo menos ${TAMANHO_MINIMO_SENHA} caracteres.`);
+    return;
+  }
   const { error } = await cliente.auth.updateUser({ password: campoNovaSenha.value });
   if (error) {
     mostrarAviso(mensagemDoErro(error));
