@@ -3,35 +3,38 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Timer de Descanso</title>
-  <meta name="description" content="Timer de descanso entre séries.">
+  <title>Plano de Treino</title>
+  <meta name="description" content="Monte seu plano de treino escolhendo entre vários exercícios.">
   <meta name="theme-color" content="#101411">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <header class="topo">
+    <h1>Plano de Treino</h1>
+  </header>
+
   <main class="app">
-    <h1>Timer de Descanso</h1>
+    <section class="painel" aria-labelledby="titulo-plano">
+      <div class="painel-topo">
+        <h2 id="titulo-plano">Meu plano</h2>
+        <span id="total-plano" class="total"></span>
+      </div>
+      <p id="plano-vazio" class="vazio">Seu plano está vazio. Adicione exercícios da lista.</p>
+      <ul id="plano" class="lista"></ul>
+      <button type="button" id="limpar-plano" class="botao-texto">Limpar plano</button>
+    </section>
 
-    <p id="tempo" class="tempo" role="timer" aria-live="off">1:30</p>
-    <p id="status" class="status" role="status">Pronto para começar</p>
-
-    <div class="presets" role="group" aria-label="Duração do descanso">
-      <button type="button" class="preset" data-segundos="30">30s</button>
-      <button type="button" class="preset" data-segundos="60">1min</button>
-      <button type="button" class="preset" data-segundos="90">1min30</button>
-      <button type="button" class="preset" data-segundos="120">2min</button>
-      <button type="button" class="preset" data-segundos="180">3min</button>
-    </div>
-
-    <div class="acoes">
-      <button type="button" id="iniciar" class="principal">Iniciar</button>
-      <button type="button" id="zerar">Zerar</button>
-    </div>
-
-    <div class="series">
-      <span>Séries feitas: <strong id="contador">0</strong></span>
-      <button type="button" id="zerar-series">Zerar séries</button>
-    </div>
+    <section class="painel" aria-labelledby="titulo-catalogo">
+      <div class="painel-topo">
+        <h2 id="titulo-catalogo">Exercícios</h2>
+        <span id="total-catalogo" class="total" role="status"></span>
+      </div>
+      <label class="busca-rotulo" for="busca">Buscar exercício</label>
+      <input type="search" id="busca" class="busca" placeholder="Ex.: agachamento" autocomplete="off">
+      <div id="grupos" class="grupos" role="group" aria-label="Filtrar por grupo muscular"></div>
+      <p id="catalogo-vazio" class="vazio" hidden>Nenhum exercício encontrado.</p>
+      <ul id="catalogo" class="lista"></ul>
+    </section>
   </main>
 
   <footer class="rodape">v0.1.0</footer>

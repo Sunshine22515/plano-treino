@@ -12,57 +12,80 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   padding: 24px 16px;
   background: var(--fundo);
   color: var(--texto);
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
+.topo,
 .app {
   width: 100%;
-  max-width: 400px;
-  text-align: center;
+  max-width: 960px;
+  margin: 0 auto;
 }
 
 h1 {
+  margin: 0 0 16px;
+  font-size: 1.5rem;
+}
+
+h2 {
   margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 1.125rem;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: start;
+  gap: 16px;
+}
+
+.painel {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  background: var(--superficie);
+}
+
+.painel-topo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.total,
+.vazio,
+.item-grupo,
+.rodape {
   color: var(--texto-suave);
 }
 
-.tempo {
-  margin: 16px 0 0;
-  font-size: clamp(4.5rem, 24vw, 7rem);
-  font-weight: 700;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
+.total {
+  font-size: 0.875rem;
 }
 
-.status {
-  margin: 8px 0 24px;
-  min-height: 1.5em;
-  color: var(--texto-suave);
-}
-
-.app.terminou .tempo,
-.app.terminou .status {
-  color: var(--destaque);
+.vazio {
+  margin: 16px 0;
 }
 
 button {
-  min-height: 48px;
+  min-height: 44px;
   padding: 0 12px;
   border: 1px solid var(--borda);
   border-radius: 10px;
-  background: var(--superficie);
+  background: var(--fundo);
   color: var(--texto);
   font: inherit;
   cursor: pointer;
@@ -72,54 +95,129 @@ button:hover {
   border-color: var(--texto-suave);
 }
 
-button:focus-visible {
+button:focus-visible,
+input:focus-visible {
   outline: 2px solid var(--destaque);
   outline-offset: 2px;
 }
 
-.presets {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 8px;
+.botao-texto {
+  width: 100%;
+  margin-top: 12px;
+  color: var(--texto-suave);
 }
 
-.preset {
-  padding: 0 4px;
+.busca-rotulo {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.875rem;
+  color: var(--texto-suave);
+}
+
+input {
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  background: var(--fundo);
+  color: var(--texto);
+  font: inherit;
+}
+
+.busca {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+}
+
+.grupos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.grupo {
+  min-height: 40px;
   font-size: 0.875rem;
 }
 
-.preset[aria-pressed="true"] {
+.grupo[aria-pressed="true"] {
   border-color: var(--destaque);
   color: var(--destaque);
 }
 
-.acoes {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 8px;
-  margin-top: 16px;
+.lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.principal {
+.item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--borda);
+}
+
+.item-info {
+  flex: 1 1 140px;
+  min-width: 0;
+}
+
+.item-nome {
+  display: block;
+  font-weight: 600;
+}
+
+.item-grupo {
+  font-size: 0.875rem;
+}
+
+.item-numeros {
+  display: flex;
+  gap: 8px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.75rem;
+  color: var(--texto-suave);
+}
+
+.campo input {
+  width: 64px;
+  min-height: 40px;
+  padding: 0 8px;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.adicionar {
   border-color: var(--destaque);
   background: var(--destaque);
   color: var(--destaque-texto);
   font-weight: 700;
 }
 
-.series {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 24px;
-  padding-top: 16px;
-  border-top: 1px solid var(--borda);
-  text-align: left;
+.adicionar[aria-pressed="true"] {
+  border-color: var(--borda);
+  background: var(--fundo);
+  color: var(--texto);
+  font-weight: 400;
 }
 
 .rodape {
   margin-top: 24px;
-  color: var(--texto-suave);
   font-size: 0.75rem;
+  text-align: center;
+}
+
+@media (max-width: 720px) {
+  .app {
+    grid-template-columns: 1fr;
+  }
 }
