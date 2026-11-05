@@ -1,6 +1,7 @@
 const TABELA = 'plano_itens';
 const CHAVE_PLANO_LOCAL = 'plano-treino:itens';
 // O Supabase exige um e-mail em toda conta. ".invalid" é reservado e nunca recebe mensagens.
+// A parte antes do @ é aleatória: se viesse do usuário, daria para pular o limite de tentativas da função "entrar".
 const DOMINIO_EMAIL_INTERNO = 'plano-treino.invalid';
 const SERIES_PADRAO = 3;
 const REPETICOES_PADRAO = 12;
@@ -12,7 +13,8 @@ const MENSAGENS_ERRO = {
   weak_password: 'Essa senha é fraca. Escolha uma senha mais forte.',
   over_email_send_rate_limit: 'Muitos e-mails enviados. Espere alguns minutos e tente de novo.',
   over_request_rate_limit: 'Muitas tentativas. Espere alguns minutos e tente de novo.',
-  user_already_exists: 'Esse nome de usuário já está em uso.'
+  user_already_exists: 'Esse nome de usuário já está em uso.',
+  muitas_tentativas: 'Muitas tentativas com esse usuário. Espere 15 minutos e tente de novo.'
 };
 
 const CATALOGO = {
@@ -442,7 +444,7 @@ formCadastro.addEventListener('submit', async evento => {
   confirmandoCadastro = true;
   // O gatilho do banco lê o nome enviado em "data" e cria o perfil junto com a conta.
   const { data, error } = await cliente.auth.signUp({
-    email: USAR_EMAIL ? document.getElementById('cadastro-email').value.trim() : `${nome}@${DOMINIO_EMAIL_INTERNO}`,
+    email: USAR_EMAIL ? document.getElementById('cadastro-email').value.trim() : `${crypto.randomUUID()}@${DOMINIO_EMAIL_INTERNO}`,
     password: senha,
     options: {
       data: { usuario: nome },

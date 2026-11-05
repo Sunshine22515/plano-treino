@@ -16,6 +16,16 @@ function responder(status: number, corpo: unknown) {
 // A resposta é a mesma para usuário inexistente e senha errada.
 const credenciaisInvalidas = () => responder(400, { code: 'invalid_credentials' });
 
+// Conta o erro antes de responder. Se não der para contar, não aceita a tentativa como normal.
+async function falhaDeLogin(admin: ReturnType<typeof createClient>, usuario: string) {
+  const { error } = await admin.rpc('registrar_falha_login', { nome: usuario });
+  if (error) {
+    console.error(error);
+    return responder(500, { code: 'erro_interno' });
+  }
+  return credenciaisInvalidas();
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: corsHeaders });
@@ -33,6 +43,17 @@ Deno.serve(async (req: Request) => {
 
   // A chave secreta fica só aqui, no servidor. Ela é o que permite ler perfis e e-mails.
   const admin = createClient(url, chaveSecreta, opcoes);
+
+  // O bloqueio vem antes de tudo: enquanto ele valer, a senha nem é testada.
+  const { data: bloqueado, error: erroBloqueio } = await admin.rpc('login_bloqueado', { nome: usuario });
+  if (erroBloqueio) {
+    console.error(erroBloqueio);
+    return responder(500, { code: 'erro_interno' });
+  }
+  if (bloqueado) {
+    return responder(429, { code: 'muitas_tentativas' });
+  }
+
   const { data: perfil, error: erroPerfil } = await admin
     .from('perfis')
     .select('user_id')
@@ -43,7 +64,7 @@ Deno.serve(async (req: Request) => {
     return responder(500, { code: 'erro_interno' });
   }
   if (!perfil) {
-    return credenciaisInvalidas();
+    return await falhaDeLogin(admin, usuario);
   }
 
   const { data: conta, error: erroConta } = await admin.auth.admin.getUserById(perfil.user_id);
@@ -61,7 +82,12 @@ Deno.serve(async (req: Request) => {
     if (erroLogin.code === 'email_not_confirmed' || erroLogin.code === 'over_request_rate_limit') {
       return responder(400, { code: erroLogin.code });
     }
-    return credenciaisInvalidas();
+    return await falhaDeLogin(admin, usuario);
+  }
+
+  const { error: erroLimpeza } = await admin.rpc('limpar_tentativas_login', { nome: usuario });
+  if (erroLimpeza) {
+    console.error(erroLimpeza);
   }
 
   return responder(200, {

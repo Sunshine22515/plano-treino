@@ -1,0 +1,49 @@
+# Gera um .apk de teste. Só roda quando alguém pede, pela aba Actions ou com "gh workflow run".
+name: Gerar APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  apk:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v7
+
+      - name: Instalar o Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Instalar o Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Instalar o Capacitor
+        run: npm install
+
+      # Só estes arquivos vão para dentro do app.
+      - name: Separar os arquivos do site
+        run: |
+          mkdir www
+          cp index.html styles.css app.js config.js www/
+
+      - name: Criar o projeto Android
+        run: npx cap add android
+
+      - name: Compilar o .apk
+        working-directory: android
+        run: ./gradlew assembleDebug
+
+      - name: Guardar o .apk para download
+        uses: actions/upload-artifact@v7
+        with:
+          name: plano-treino-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error

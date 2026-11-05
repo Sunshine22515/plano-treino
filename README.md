@@ -11,10 +11,20 @@ App para cada pessoa criar uma conta e montar o próprio plano de treino, escolh
 
 O plano fica salvo na sua conta, e você o vê em qualquer aparelho.
 
+## Como gerar o app Android
+
+O workflow `.github/workflows/gerar-apk.yml` usa o Capacitor para gerar um `.apk` de teste no GitHub, sem instalar nada no computador.
+
+1. No GitHub, abra **Actions > Gerar APK > Run workflow**.
+2. Quando terminar, baixe `plano-treino-apk` na página da execução e extraia o `.apk` do zip.
+3. Instale no celular Android, permitindo a instalação de apps de fora da Play Store.
+
+Este `.apk` é de teste. Para distribuir, ele precisa de uma assinatura própria.
+
 ## Como configurar
 
 1. Crie um projeto no [Supabase](https://supabase.com).
-2. Rode os arquivos `supabase/schema.sql`, `supabase/excluir_conta.sql` e `supabase/usuarios.sql`, nessa ordem, no SQL Editor do projeto.
+2. Rode os arquivos `supabase/schema.sql`, `supabase/excluir_conta.sql`, `supabase/usuarios.sql` e `supabase/tentativas_login.sql`, nessa ordem, no SQL Editor do projeto.
 3. Crie a Edge Function `entrar` com o código de `supabase/functions/entrar/index.ts` e desligue a verificação de JWT dela, porque o login acontece antes de existir uma sessão.
 4. Coloque o endereço do projeto e a chave publishable em `config.js`.
 5. Em **Authentication > URL Configuration**, adicione o endereço do site às URLs de redirecionamento permitidas.
