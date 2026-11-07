@@ -32,12 +32,7 @@ jobs:
       - name: Instalar o Capacitor
         run: npm install
 
-      # Só estes arquivos vão para dentro do app.
-      - name: Separar os arquivos do site
-        run: |
-          mkdir www
-          cp index.html styles.css app.js config.js www/
-
+      # Só a pasta web vai para dentro do app, conforme o capacitor.config.json.
       - name: Criar o projeto Android
         run: npx cap add android
 

@@ -1,0 +1,86 @@
+/* Aba Perfil: resumo e tabela de progressão. */
+
+.perfil-rotulo {
+  font-size: 0.8125rem;
+  color: var(--texto-suave);
+}
+
+#aba-perfil .titulo-pagina {
+  overflow-wrap: anywhere;
+}
+
+.perfil-resumo {
+  font-size: 0.875rem;
+}
+
+.perfil-resumo strong {
+  display: block;
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+#progresso-cartao {
+  margin-top: 12px;
+}
+
+.tabela-progresso .progressao-valor {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.nota-tabela {
+  margin-top: 8px;
+  font-size: 0.75rem;
+  color: var(--texto-suave);
+}
+
+.subtitulo {
+  margin: 20px 0 8px;
+  font-size: 1rem;
+}
+
+#progresso-cartao .subtitulo {
+  margin-top: 0;
+}
+
+.tabela-rolavel {
+  overflow-x: auto;
+}
+
+.tabela-progresso {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.tabela-progresso th,
+.tabela-progresso td {
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--borda);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.tabela-progresso th {
+  font-weight: 600;
+}
+
+.tabela-progresso th:first-child {
+  padding-left: 0;
+  white-space: normal;
+}
+
+.tabela-progresso th:last-child,
+.tabela-progresso td:last-child {
+  padding-right: 0;
+  text-align: right;
+}
+
+.progresso-detalhe {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--texto-suave);
+}

@@ -1,0 +1,50 @@
+/* Aba Admin: busca de exercícios e escolha de dias e grupos. */
+
+.busca-rotulo {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.875rem;
+  color: var(--texto-suave);
+}
+
+.busca {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 16px;
+}
+
+#admin-semana {
+  margin-top: 8px;
+}
+
+.grupos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.grupo {
+  min-height: 40px;
+  padding: 0 14px;
+  font-size: 0.8125rem;
+}
+
+.grupo[aria-pressed="true"] {
+  border-color: var(--preto);
+  background: var(--preto);
+  color: var(--sobre-preto);
+}
+
+.botao-perigo {
+  margin-top: 20px;
+  border-color: var(--perigo);
+  background: none;
+  color: var(--perigo);
+}
+
+.rodape {
+  margin-top: 24px;
+  font-size: 0.75rem;
+  text-align: center;
+}

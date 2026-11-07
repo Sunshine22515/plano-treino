@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Plano de Treino</title>
+  <meta name="description" content="Planilhas de treino semanais, com registro de cargas e progresso.">
+  <meta name="theme-color" content="#f1f2f4">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;1,700&display=swap">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/login.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/treino.css">
+  <link rel="stylesheet" href="css/perfil.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <script src="js/tema.js"></script>
+</head>
+<body class="modo-login">
+  <header class="marca">
+    <button type="button" class="botao-tema botao-tema-login">
+      <svg class="icone-lua" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="currentColor"/></svg>
+      <svg class="icone-sol" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <svg class="marca-icone" viewBox="0 0 64 64" aria-hidden="true">
+      <g transform="rotate(-35 32 32)" fill="currentColor">
+        <rect x="4" y="25" width="6" height="14" rx="3"/>
+        <rect x="12" y="17" width="9" height="30" rx="4"/>
+        <rect x="21" y="28" width="22" height="8" rx="2"/>
+        <rect x="43" y="17" width="9" height="30" rx="4"/>
+        <rect x="54" y="25" width="6" height="14" rx="3"/>
+      </g>
+    </svg>
+    <h1>Plano de Treino</h1>
+  </header>
+
+  <header id="sessao" class="topo" hidden>
+    <div class="saudacao">
+      <p id="nome-usuario" class="nome-usuario"></p>
+      <p id="data-hoje" class="data-hoje"></p>
+    </div>
+    <div class="acoes-topo">
+      <button type="button" class="botao-tema">
+        <svg class="icone-lua" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="currentColor"/></svg>
+        <svg class="icone-sol" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <button type="button" id="sair" class="botao-sair">Sair</button>
+    </div>
+  </header>
+
+  <p id="aviso" class="aviso" role="alert" hidden></p>
+
+  <section id="tela-entrar" class="painel conta" aria-labelledby="titulo-entrar" hidden>
+    <h2 id="titulo-entrar">Entre na sua conta</h2>
+    <form id="form-entrar" novalidate>
+      <label class="busca-rotulo" for="entrar-usuario">Nome de usuário</label>
+      <input type="text" id="entrar-usuario" class="busca" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+      <label class="busca-rotulo" for="entrar-senha">Senha</label>
+      <input type="password" id="entrar-senha" class="busca" autocomplete="current-password" required>
+      <div class="conta-acoes">
+        <button type="submit" class="adicionar">Entrar</button>
+        <button type="button" data-ir-para="cadastro">Criar conta</button>
+      </div>
+      <button type="button" id="esqueci-senha" class="botao-texto" data-ir-para="recuperar">Esqueci minha senha</button>
+    </form>
+  </section>
+
+  <section id="tela-cadastro" class="painel conta" aria-labelledby="titulo-cadastro" hidden>
+    <h2 id="titulo-cadastro">Crie sua conta</h2>
+    <form id="form-cadastro" novalidate>
+      <label class="busca-rotulo" for="cadastro-usuario">Nome de usuário (3 a 20 letras, números ou _)</label>
+      <input type="text" id="cadastro-usuario" class="busca" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+      <div id="campo-email">
+        <label class="busca-rotulo" for="cadastro-email">E-mail (só para confirmações)</label>
+        <input type="email" id="cadastro-email" class="busca" autocomplete="email" required>
+      </div>
+      <label class="busca-rotulo" for="cadastro-senha">Senha (mínimo de 8 caracteres)</label>
+      <input type="password" id="cadastro-senha" class="busca" autocomplete="new-password" minlength="8" required>
+      <label class="busca-rotulo" for="cadastro-confirmar">Confirme a senha</label>
+      <input type="password" id="cadastro-confirmar" class="busca" autocomplete="new-password" minlength="8" required>
+      <button type="submit" class="adicionar salvar-senha">Criar conta</button>
+      <button type="button" class="botao-texto" data-ir-para="entrar">Já tenho conta</button>
+    </form>
+  </section>
+
+  <section id="tela-recuperar" class="painel conta" aria-labelledby="titulo-recuperar" hidden>
+    <h2 id="titulo-recuperar">Recupere sua senha</h2>
+    <form id="form-recuperar" novalidate>
+      <label class="busca-rotulo" for="recuperar-email">E-mail da conta</label>
+      <input type="email" id="recuperar-email" class="busca" autocomplete="email" required>
+      <button type="submit" class="adicionar salvar-senha">Enviar link</button>
+      <button type="button" class="botao-texto" data-ir-para="entrar">Voltar para o login</button>
+    </form>
+  </section>
+
+  <section id="tela-nova-senha" class="painel conta" aria-labelledby="titulo-nova-senha" hidden>
+    <h2 id="titulo-nova-senha">Crie uma nova senha</h2>
+    <form id="form-nova-senha" novalidate>
+      <label class="busca-rotulo" for="nova-senha">Nova senha (mínimo de 8 caracteres)</label>
+      <input type="password" id="nova-senha" class="busca" autocomplete="new-password" minlength="8" required>
+      <button type="submit" class="adicionar salvar-senha">Salvar nova senha</button>
+    </form>
+  </section>
+
+  <main id="tela-app" class="app" hidden>
+    <section id="aba-treino" aria-labelledby="titulo-semana">
+      <div class="resumo">
+        <div class="resumo-cartao">
+          <strong id="resumo-semana">1</strong>
+          <span>Semana</span>
+        </div>
+        <div class="resumo-cartao">
+          <strong id="resumo-exercicios">0</strong>
+          <span>Exercícios no dia</span>
+        </div>
+        <div class="resumo-cartao">
+          <strong id="resumo-feitos">0</strong>
+          <span>Registrados</span>
+        </div>
+      </div>
+
+      <div id="semana-cartao" class="cartao-destaque">
+        <div class="painel-topo">
+          <h2 id="titulo-semana"></h2>
+          <span class="total">Exercícios por dia</span>
+        </div>
+        <div id="dias-treino" class="barras" role="group" aria-label="Dia da semana"></div>
+      </div>
+
+      <div class="secao-topo">
+        <h2 id="titulo-dia">Treino do dia</h2>
+        <span id="total-dia" class="total"></span>
+      </div>
+      <p id="treino-vazio" class="vazio" hidden></p>
+      <ul id="treino" class="lista lista-cartoes"></ul>
+      <button type="button" id="concluir-semana" class="adicionar largura-total" hidden>Concluir semana</button>
+    </section>
+
+    <section id="aba-perfil" aria-labelledby="perfil-nome" hidden>
+      <p class="perfil-rotulo">Perfil</p>
+      <h2 id="perfil-nome" class="titulo-pagina"></h2>
+
+      <div id="perfil-resumo" class="cartao-destaque perfil-resumo" hidden>
+        <p id="perfil-resumo-periodo"></p>
+        <strong id="perfil-resumo-valor"></strong>
+        <p id="perfil-resumo-detalhe"></p>
+      </div>
+
+      <p id="progresso-vazio" class="vazio" hidden>Ainda não há cargas registradas. Seu progresso aparece aqui conforme você treina.</p>
+
+      <div id="progresso-cartao" class="painel" hidden>
+        <h3 class="subtitulo">Progresso semanal</h3>
+        <div id="progresso" class="tabela-rolavel" tabindex="0" role="region" aria-label="Progressão de carga por exercício"></div>
+        <p class="nota-tabela">Compara a maior carga da primeira e da última semana registradas.</p>
+      </div>
+    </section>
+
+    <div id="aba-admin" class="colunas" hidden>
+      <section class="painel" aria-labelledby="titulo-admin">
+        <h2 id="titulo-admin">Planilha do usuário</h2>
+        <label class="busca-rotulo" for="admin-usuario">Usuário</label>
+        <select id="admin-usuario" class="busca"></select>
+        <p id="admin-semana" class="total"></p>
+        <div id="dias-admin" class="grupos" role="group" aria-label="Dia da semana da planilha"></div>
+        <p id="admin-vazio" class="vazio" hidden>Nenhum exercício neste dia. Adicione da lista.</p>
+        <ul id="admin-plano" class="lista"></ul>
+        <h3 class="subtitulo">Progresso</h3>
+        <p id="admin-progresso-vazio" class="vazio" hidden>Este usuário ainda não tem registros.</p>
+        <div id="admin-progresso" class="tabela-rolavel" tabindex="0" role="region" aria-label="Progresso do usuário"></div>
+        <button type="button" id="excluir-conta" class="botao-texto botao-perigo" hidden>Excluir esta conta</button>
+      </section>
+
+      <section class="painel" aria-labelledby="titulo-catalogo">
+        <div class="painel-topo">
+          <h2 id="titulo-catalogo">Exercícios</h2>
+          <span id="total-catalogo" class="total" role="status"></span>
+        </div>
+        <label class="busca-rotulo" for="busca">Buscar exercício</label>
+        <input type="search" id="busca" class="busca" placeholder="Ex.: agachamento" autocomplete="off">
+        <div id="grupos" class="grupos" role="group" aria-label="Filtrar por grupo muscular"></div>
+        <p id="catalogo-vazio" class="vazio" hidden>Nenhum exercício encontrado.</p>
+        <ul id="catalogo" class="lista"></ul>
+      </section>
+    </div>
+
+    <nav class="menu-inferior" aria-label="Seções do app">
+      <button type="button" class="aba" data-aba="treino">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10h2V7h3v10H5v-3H3v-4zm18 0h-2V7h-3v10h3v-3h2v-4zM9 11h6v2H9z" fill="currentColor"/></svg>
+        <span>Treino</span>
+      </button>
+      <button type="button" class="aba" data-aba="perfil">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm0 2c-4 0-8 2-8 5v2h16v-2c0-3-4-5-8-5z" fill="currentColor"/></svg>
+        <span>Perfil</span>
+      </button>
+      <button type="button" class="aba" data-aba="admin" id="aba-admin-botao" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 9.3 8 11 4.6-1.7 8-6 8-11V5l-8-3zm-1 14-4-4 1.4-1.4L11 13.2l4.6-4.6L17 10l-6 6z" fill="currentColor"/></svg>
+        <span>Admin</span>
+      </button>
+    </nav>
+  </main>
+
+  <footer class="rodape">v0.5.0</footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js" integrity="sha384-TcHRA3zBbn+Lexh5n+Oil4guNPOS3rjNDpGRAN46u/s/mB2IZ50ceC6TYDU2yvgK" crossorigin="anonymous"></script>
+  <script src="config.js"></script>
+  <!-- A ordem importa: cada arquivo usa o que os anteriores definiram. -->
+  <script src="js/constantes.js"></script>
+  <script src="js/catalogo.js"></script>
+  <script src="js/elementos.js"></script>
+  <script src="js/estado.js"></script>
+  <script src="js/utilidades.js"></script>
+  <script src="js/treino.js"></script>
+  <script src="js/perfil.js"></script>
+  <script src="js/admin.js"></script>
+  <script src="js/conta.js"></script>
+  <script src="js/iniciar.js"></script>
+</body>
+</html>
