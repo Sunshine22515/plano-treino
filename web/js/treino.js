@@ -42,11 +42,12 @@ function buscarLembrete(exercicio) {
 
 function criarDica(anteriores, lembrete) {
   const textos = [];
-  if (anteriores.length > 0) {
-    textos.push(`Semana ${anteriores[0].semana}: ${anteriores.map(formatarCarga).join(' · ')}`);
+  // Nas Configurações, a pessoa pode esconder os números da semana passada. O lembrete continua.
+  if (anteriores.length > 0 && lerPreferencia('mostrarAnterior')) {
+    textos.push(`${t('Semana {n}', { n: anteriores[0].semana })}: ${anteriores.map(formatarCarga).join(' · ')}`);
   }
   if (lembrete) {
-    textos.push(`Lembrete: ${lembrete}`);
+    textos.push(`${t('Lembrete')}: ${lembrete}`);
   }
   if (textos.length === 0) {
     return null;
@@ -58,7 +59,7 @@ function criarDica(anteriores, lembrete) {
 }
 
 function mostrarSalvo(situacao) {
-  situacao.textContent = 'Salvo';
+  situacao.textContent = t('Salvo');
   setTimeout(() => {
     situacao.textContent = '';
   }, TEMPO_SALVO_MS);
@@ -71,7 +72,7 @@ async function salvarSerie(item, numero, campos, situacao) {
     const atual = buscarSerieAtual(item, numero);
     campos.carga.value = formatarCargaCampo(atual?.carga);
     campos.repeticoes.value = atual?.repeticoes === null || atual?.repeticoes === undefined ? '' : String(atual.repeticoes);
-    mostrarAviso('Use só números na carga e nas repetições.');
+    mostrarAviso(t('Use só números na carga e nas repetições.'));
     return;
   }
 
@@ -89,7 +90,7 @@ async function salvarSerie(item, numero, campos, situacao) {
     dados.repeticoes = Math.round(dados.repeticoes);
   }
 
-  situacao.textContent = 'Salvando...';
+  situacao.textContent = t('Salvando...');
   const { data, error } = await cliente
     .from(TABELA_SERIES)
     .upsert(dados, { onConflict: 'user_id,semana,dia_semana,exercicio,serie' })
@@ -112,7 +113,7 @@ async function salvarSerie(item, numero, campos, situacao) {
 }
 
 async function salvarAnotacao(item, campo, situacao) {
-  situacao.textContent = 'Salvando...';
+  situacao.textContent = t('Salvando...');
   const { data, error } = await cliente
     .from(TABELA_REGISTROS)
     .upsert({
@@ -159,7 +160,7 @@ function desenharBarrasDias() {
     botao.className = 'barra';
     botao.disabled = quantidade === 0;
     botao.setAttribute('aria-pressed', String(dia.numero === diaAtivo));
-    botao.setAttribute('aria-label', `${dia.completo}: ${plural(quantidade, 'exercício', 'exercícios')}`);
+    botao.setAttribute('aria-label', `${dia.completo}: ${quantosExercicios(quantidade)}`);
     botao.addEventListener('click', () => {
       diaAtivo = dia.numero;
       desenharTreino();
@@ -186,7 +187,7 @@ function criarTabelaSeries(item, anteriores, situacao) {
   tabela.className = 'tabela-series';
 
   const cabecalho = tabela.createTHead().insertRow();
-  ['Set', 'Carga (kg)', `Reps (${item.repeticoes})`].forEach(texto => {
+  [t('Set'), t('Carga (kg)'), t('Reps ({faixa})', { faixa: item.repeticoes })].forEach(texto => {
     const celula = document.createElement('th');
     celula.scope = 'col';
     celula.textContent = texto;
@@ -197,11 +198,14 @@ function criarTabelaSeries(item, anteriores, situacao) {
   for (let numero = 1; numero <= item.series; numero += 1) {
     const atual = buscarSerieAtual(item, numero);
     const anterior = anteriores.find(serie => serie.serie === numero);
-    const carga = criarEntrada(formatarCargaCampo(atual?.carga), 'decimal', `Carga do set ${numero} de ${item.exercicio}`);
-    const repeticoes = criarEntrada(atual?.repeticoes, 'numeric', `Repetições do set ${numero} de ${item.exercicio}`);
-    // O valor da semana anterior fica visível no campo vazio.
-    carga.placeholder = formatarCargaCampo(anterior?.carga);
-    repeticoes.placeholder = anterior?.repeticoes === null || anterior?.repeticoes === undefined ? '' : String(anterior.repeticoes);
+    const descricao = { n: numero, exercicio: nomeExercicio(item.exercicio) };
+    const carga = criarEntrada(formatarCargaCampo(atual?.carga), 'decimal', t('Carga do set {n} de {exercicio}', descricao));
+    const repeticoes = criarEntrada(atual?.repeticoes, 'numeric', t('Repetições do set {n} de {exercicio}', descricao));
+    // O valor da semana anterior fica visível no campo vazio, se a pessoa não desligou isso nas Configurações.
+    if (lerPreferencia('mostrarAnterior')) {
+      carga.placeholder = formatarCargaCampo(anterior?.carga);
+      repeticoes.placeholder = anterior?.repeticoes === null || anterior?.repeticoes === undefined ? '' : String(anterior.repeticoes);
+    }
 
     const campos = { carga, repeticoes };
     Object.values(campos).forEach(campo => {
@@ -219,20 +223,104 @@ function criarTabelaSeries(item, anteriores, situacao) {
   return tabela;
 }
 
+// --- Janela de demonstração ---
+
+let trocaDeFoto = null;
+let demonstracaoAtual = null;
+
+function criarBotaoDemonstracao(exercicio) {
+  const botao = document.createElement('button');
+  botao.type = 'button';
+  botao.className = 'botao-demonstracao';
+  botao.setAttribute('aria-label', t('Ver a execução de {exercicio}', { exercicio: nomeExercicio(exercicio) }));
+  botao.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></svg>';
+  botao.append(t('Execução'));
+  botao.addEventListener('click', () => abrirDemonstracao(exercicio));
+  return botao;
+}
+
+// Carrega as duas fotos e só começa a alternar quando as duas chegaram.
+function abrirDemonstracao(exercicio) {
+  const fotos = fotosDaDemonstracao(exercicio);
+  pararDemonstracao();
+  demonstracaoAtual = exercicio;
+  demonstracaoTitulo.textContent = nomeExercicio(exercicio);
+  demonstracaoFoto.hidden = true;
+  demonstracaoFoto.alt = t('{exercicio}: começo e fim do movimento', { exercicio: nomeExercicio(exercicio) });
+  demonstracaoCarregando.hidden = false;
+  demonstracaoCarregando.textContent = t('Carregando...');
+  janelaDemonstracao.showModal();
+
+  Promise.all(fotos.map(endereco => new Promise((resolver, rejeitar) => {
+    const imagem = new Image();
+    imagem.onload = resolver;
+    imagem.onerror = rejeitar;
+    imagem.src = endereco;
+  }))).then(() => {
+    // A pessoa pode ter fechado ou aberto outro exercício enquanto carregava.
+    if (!janelaDemonstracao.open || demonstracaoAtual !== exercicio) {
+      return;
+    }
+    let atual = 0;
+    demonstracaoFoto.src = fotos[atual];
+    demonstracaoFoto.hidden = false;
+    demonstracaoCarregando.hidden = true;
+    trocaDeFoto = setInterval(() => {
+      // Nem todo navegador avisa quando a janela fecha, então a troca confere sozinha.
+      if (!janelaDemonstracao.open) {
+        pararDemonstracao();
+        return;
+      }
+      atual = 1 - atual;
+      demonstracaoFoto.src = fotos[atual];
+    }, 900);
+  }).catch(() => {
+    if (demonstracaoAtual === exercicio) {
+      demonstracaoCarregando.textContent = t('Não foi possível carregar as fotos. Confira sua internet.');
+    }
+  });
+}
+
+function pararDemonstracao() {
+  clearInterval(trocaDeFoto);
+  trocaDeFoto = null;
+}
+
+botaoFecharDemonstracao.addEventListener('click', () => janelaDemonstracao.close());
+janelaDemonstracao.addEventListener('close', pararDemonstracao);
+// Tocar fora da janela também fecha.
+janelaDemonstracao.addEventListener('click', evento => {
+  if (evento.target === janelaDemonstracao) {
+    janelaDemonstracao.close();
+  }
+});
+
+// --- Cartão do exercício ---
+
 function criarCartaoTreino(item) {
   const linha = document.createElement('li');
   linha.className = 'item item-coluna';
 
   const nome = document.createElement('h3');
   nome.className = 'exercicio-nome';
-  nome.textContent = item.exercicio;
+  nome.textContent = nomeExercicio(item.exercicio);
   linha.append(nome);
 
-  if (item.rir !== null) {
-    const rir = document.createElement('p');
-    rir.className = 'exercicio-rir';
-    rir.textContent = `RIR → ${item.rir}`;
-    linha.append(rir);
+  // O RIR do admin e, se o exercício tiver fotos e o botão estiver ligado, o botão de ver a execução.
+  const temFotos = fotosDaDemonstracao(item.exercicio).length > 0 && lerPreferencia('mostrarExecucao');
+  if (item.rir !== null || temFotos) {
+    const detalhes = document.createElement('div');
+    detalhes.className = 'exercicio-linha';
+    if (item.rir !== null) {
+      const rir = document.createElement('p');
+      rir.className = 'exercicio-rir';
+      rir.textContent = `RIR → ${item.rir}`;
+      detalhes.append(rir);
+    }
+    if (temFotos) {
+      detalhes.append(criarBotaoDemonstracao(item.exercicio));
+    }
+    linha.append(detalhes);
   }
 
   const situacao = document.createElement('p');
@@ -250,17 +338,17 @@ function criarCartaoTreino(item) {
   const anotacao = document.createElement('textarea');
   anotacao.maxLength = 500;
   anotacao.value = buscarAnotacaoAtual(item);
-  anotacao.setAttribute('aria-label', `Anotações de ${item.exercicio}`);
+  anotacao.setAttribute('aria-label', t('Anotações de {exercicio}', { exercicio: nomeExercicio(item.exercicio) }));
   anotacao.addEventListener('change', () => salvarAnotacao(item, anotacao, situacao));
 
-  const campoAnotacao = criarCampo('Anotações', anotacao);
+  const campoAnotacao = criarCampo(t('Anotações'), anotacao);
   campoAnotacao.classList.add('campo-texto');
   linha.append(campoAnotacao, situacao);
   return linha;
 }
 
 function desenharTreino() {
-  tituloSemana.textContent = `Semana ${perfil?.semana_atual ?? 1}`;
+  tituloSemana.textContent = t('Semana {n}', { n: perfil?.semana_atual ?? 1 });
 
   const diasComTreino = DIAS.filter(dia => planilha.some(item => item.dia_semana === dia.numero));
   // Se hoje não for dia de treino, abre no primeiro dia que tiver.
@@ -273,21 +361,22 @@ function desenharTreino() {
 
   const doDia = planilha.filter(item => item.dia_semana === diaAtivo);
   treino.replaceChildren(...doDia.map(criarCartaoTreino));
-  totalDia.textContent = doDia.length > 0 ? plural(doDia.length, 'exercício', 'exercícios') : '';
+  totalDia.textContent = doDia.length > 0 ? quantosExercicios(doDia.length) : '';
   tituloDia.textContent = diasComTreino.length > 0
-    ? `Treino de ${DIAS.find(dia => dia.numero === diaAtivo).completo}`
-    : 'Treino do dia';
+    ? t('Treino de {dia}', { dia: DIAS.find(dia => dia.numero === diaAtivo).completo })
+    : t('Treino do dia');
   atualizarResumo();
 
   treinoVazio.hidden = diasComTreino.length > 0;
   treinoVazio.textContent = perfil?.papel === 'admin'
-    ? 'Sua planilha está vazia. Monte em Admin.'
-    : 'Seu treino ainda não foi montado. Fale com o admin.';
+    ? t('Sua planilha está vazia. Monte em Admin.')
+    : t('Seu treino ainda não foi montado. Fale com o admin.');
   botaoConcluirSemana.hidden = diasComTreino.length === 0;
 }
 
 botaoConcluirSemana.addEventListener('click', () => umaPorVez(async () => {
-  if (!confirm(`Concluir a semana ${perfil.semana_atual} e passar para a próxima?`)) {
+  const pergunta = t('Concluir a semana {n} e passar para a próxima?', { n: perfil.semana_atual });
+  if (lerPreferencia('confirmarSemana') && !confirm(pergunta)) {
     return;
   }
   const { data, error } = await cliente.rpc('avancar_semana');

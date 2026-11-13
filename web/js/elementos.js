@@ -31,8 +31,23 @@ const botaoSair = document.getElementById('sair');
 const abas = {
   treino: document.getElementById('aba-treino'),
   perfil: document.getElementById('aba-perfil'),
-  admin: document.getElementById('aba-admin')
+  admin: document.getElementById('aba-admin'),
+  config: document.getElementById('aba-config')
 };
+const botaoAbrirConfig = document.getElementById('abrir-config');
+const configTema = document.getElementById('config-tema');
+const configIdioma = document.getElementById('config-idioma');
+const configAnterior = document.getElementById('config-anterior');
+const configExecucao = document.getElementById('config-execucao');
+const configConfirmar = document.getElementById('config-confirmar');
+const configAdmin = document.getElementById('config-admin');
+const configSeries = document.getElementById('config-series');
+const configReps = document.getElementById('config-reps');
+const formTrocarSenha = document.getElementById('form-trocar-senha');
+const configNovaSenha = document.getElementById('config-nova-senha');
+const configConfirmarSenha = document.getElementById('config-confirmar-senha');
+const botaoExportar = document.getElementById('exportar-historico');
+const botaoSairDeTudo = document.getElementById('sair-de-tudo');
 const botaoAbaAdmin = document.getElementById('aba-admin-botao');
 const tituloSemana = document.getElementById('titulo-semana');
 const totalDia = document.getElementById('total-dia');
@@ -55,3 +70,11 @@ const catalogoVazio = document.getElementById('catalogo-vazio');
 const totalCatalogo = document.getElementById('total-catalogo');
 const busca = document.getElementById('busca');
 const grupos = document.getElementById('grupos');
+const formNovoExercicio = document.getElementById('form-novo-exercicio');
+const novoExercicioNome = document.getElementById('novo-exercicio-nome');
+const novoExercicioGrupo = document.getElementById('novo-exercicio-grupo');
+const janelaDemonstracao = document.getElementById('janela-demonstracao');
+const demonstracaoTitulo = document.getElementById('demonstracao-titulo');
+const demonstracaoFoto = document.getElementById('demonstracao-foto');
+const demonstracaoCarregando = document.getElementById('demonstracao-carregando');
+const botaoFecharDemonstracao = document.getElementById('fechar-demonstracao');

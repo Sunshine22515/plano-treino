@@ -10,7 +10,9 @@ document.querySelectorAll('[data-aba]').forEach(botao => {
   });
 });
 
-dataHoje.textContent = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+// Primeiro os textos fixos da página saem no idioma escolhido. Os criados depois já usam t().
+traduzirPagina();
+dataHoje.textContent = new Date().toLocaleDateString(LOCALIDADE, { weekday: 'long', day: 'numeric', month: 'long' });
 mostrarAba('treino');
 desenharGrupos();
 desenharCatalogo();

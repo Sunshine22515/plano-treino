@@ -10,10 +10,11 @@ function criarCamposAdmin(item) {
   const numeros = document.createElement('div');
   numeros.className = 'item-numeros';
 
-  const series = criarEntrada(item.series, 'numeric', `Séries de ${item.exercicio}`);
-  const repeticoes = criarEntrada(item.repeticoes, 'text', `Faixa de repetições de ${item.exercicio}`);
+  const nome = { exercicio: nomeExercicio(item.exercicio) };
+  const series = criarEntrada(item.series, 'numeric', t('Séries de {exercicio}', nome));
+  const repeticoes = criarEntrada(item.repeticoes, 'text', t('Faixa de repetições de {exercicio}', nome));
   repeticoes.placeholder = '6-8';
-  const rir = criarEntrada(item.rir, 'text', `RIR por série de ${item.exercicio}`);
+  const rir = criarEntrada(item.rir, 'text', t('RIR por série de {exercicio}', nome));
   rir.placeholder = '0-1-1';
 
   const salvar = async (coluna, valor, entrada, anterior) => {
@@ -36,7 +37,7 @@ function criarCamposAdmin(item) {
     const faixa = valor.match(/^(\d{1,2})-(\d{1,2})$/);
     if (!faixa || Number(faixa[1]) < 1 || Number(faixa[1]) >= Number(faixa[2])) {
       repeticoes.value = item.repeticoes;
-      mostrarAviso('Use uma faixa de repetições, do menor para o maior, como 6-8.');
+      mostrarAviso(t('Use uma faixa de repetições, do menor para o maior, como 6-8.'));
       return;
     }
     salvar('repeticoes', valor, repeticoes, item.repeticoes);
@@ -46,19 +47,19 @@ function criarCamposAdmin(item) {
     const valido = /^\d{1,2}(-\d{1,2})*$/.test(texto) && texto.split('-').every(parte => Number(parte) <= 10);
     if (texto !== '' && !valido) {
       rir.value = item.rir === null ? '' : item.rir;
-      mostrarAviso('Use um RIR de 0 a 10 para cada série, separado por hífen, como 0-1-1. Também pode ficar vazio.');
+      mostrarAviso(t('Use um RIR de 0 a 10 para cada série, separado por hífen, como 0-1-1. Também pode ficar vazio.'));
       return;
     }
     salvar('rir', texto === '' ? null : texto, rir, item.rir);
   });
 
-  numeros.append(criarCampo('Séries', series), criarCampo('Reps', repeticoes), criarCampo('RIR', rir));
+  numeros.append(criarCampo(t('Séries'), series), criarCampo(t('Reps'), repeticoes), criarCampo(t('RIR'), rir));
   return numeros;
 }
 
 function desenharPlanilhaAdmin() {
   const alvo = buscarAlvo();
-  adminSemana.textContent = alvo ? `Está na semana ${alvo.semana_atual}.` : 'Nenhum usuário encontrado.';
+  adminSemana.textContent = alvo ? t('Está na semana {n}.', { n: alvo.semana_atual }) : t('Nenhum usuário encontrado.');
   botaoExcluirConta.hidden = !alvo || alvo.user_id === usuario?.id;
 
   criarBotoesDias(diasAdmin, diaAdmin, DIAS, dia => {
@@ -77,8 +78,8 @@ function desenharPlanilhaAdmin() {
 
     const remover = document.createElement('button');
     remover.type = 'button';
-    remover.textContent = 'Remover';
-    remover.setAttribute('aria-label', `Remover ${item.exercicio} da planilha`);
+    remover.textContent = t('Remover');
+    remover.setAttribute('aria-label', t('Remover {exercicio} da planilha', { exercicio: nomeExercicio(item.exercicio) }));
     remover.addEventListener('click', () => alternarExercicio(item.exercicio));
 
     linha.append(criarInfo(buscarExercicio(item.exercicio)), criarCamposAdmin(item), remover);
@@ -95,7 +96,7 @@ function estaNoDia(nome) {
 
 function atualizarBotao(botao, nome) {
   const noDia = estaNoDia(nome);
-  botao.textContent = noDia ? 'Remover' : 'Adicionar';
+  botao.textContent = noDia ? t('Remover') : t('Adicionar');
   botao.setAttribute('aria-pressed', String(noDia));
   botao.disabled = !alvoId;
 }
@@ -107,9 +108,10 @@ function atualizarBotoesCatalogo() {
 
 function desenharCatalogo() {
   const termo = normalizar(busca.value);
-  const visiveis = EXERCICIOS.filter(exercicio =>
+  // A busca acha o exercício pelo nome em português e também pelo nome em inglês.
+  const visiveis = todosExercicios().filter(exercicio =>
     (grupoAtivo === TODOS || exercicio.grupo === grupoAtivo) &&
-    normalizar(exercicio.nome).includes(termo)
+    (normalizar(exercicio.nome).includes(termo) || normalizar(nomeExercicio(exercicio.nome)).includes(termo))
   );
 
   catalogo.replaceChildren(...visiveis.map(exercicio => {
@@ -120,16 +122,33 @@ function desenharCatalogo() {
     botao.type = 'button';
     botao.className = 'adicionar';
     botao.dataset.nome = exercicio.nome;
-    botao.setAttribute('aria-label', exercicio.nome);
+    botao.setAttribute('aria-label', nomeExercicio(exercicio.nome));
     atualizarBotao(botao, exercicio.nome);
     botao.addEventListener('click', () => alternarExercicio(exercicio.nome));
 
-    linha.append(criarInfo(exercicio), botao);
+    const info = criarInfo(exercicio);
+    if (!exercicio.personalizado) {
+      linha.append(info, botao);
+      return linha;
+    }
+
+    info.querySelector('.item-grupo').textContent = t('{grupo} · cadastrado', { grupo: t(exercicio.grupo) });
+    const excluir = document.createElement('button');
+    excluir.type = 'button';
+    excluir.className = 'botao-discreto';
+    excluir.textContent = t('Tirar da lista');
+    excluir.setAttribute('aria-label', t('Tirar {exercicio} da lista', { exercicio: exercicio.nome }));
+    excluir.addEventListener('click', () => excluirPersonalizado(exercicio.nome));
+
+    const acoes = document.createElement('div');
+    acoes.className = 'item-acoes';
+    acoes.append(excluir, botao);
+    linha.append(info, acoes);
     return linha;
   }));
 
   catalogoVazio.hidden = visiveis.length > 0;
-  totalCatalogo.textContent = plural(visiveis.length, 'exercício', 'exercícios');
+  totalCatalogo.textContent = quantosExercicios(visiveis.length);
 }
 
 function alternarExercicio(nome) {
@@ -152,8 +171,9 @@ function alternarExercicio(nome) {
           user_id: alvoId,
           dia_semana: diaAdmin,
           exercicio: nome,
-          series: SERIES_PADRAO,
-          repeticoes: REPETICOES_PADRAO,
+          // O admin escolhe esses padrões nas Configurações.
+          series: lerPreferencia('seriesPadrao'),
+          repeticoes: lerPreferencia('repeticoesPadrao'),
           posicao
         })
         .select()
@@ -175,7 +195,7 @@ function desenharGrupos() {
     const botao = document.createElement('button');
     botao.type = 'button';
     botao.className = 'grupo';
-    botao.textContent = nome;
+    botao.textContent = t(nome);
     botao.setAttribute('aria-pressed', String(nome === grupoAtivo));
     botao.addEventListener('click', () => {
       grupoAtivo = nome;
@@ -211,7 +231,46 @@ async function carregarAlvo(id) {
   atualizarBotoesCatalogo();
 }
 
+async function carregarPersonalizados() {
+  const { data, error } = await cliente.from(TABELA_PERSONALIZADOS).select('id, nome, grupo').order('nome');
+  if (error) {
+    mostrarAviso(mensagemDoErro(error));
+    return;
+  }
+  exerciciosPersonalizados = data;
+  desenharCatalogo();
+}
+
+function excluirPersonalizado(nome) {
+  return umaPorVez(async () => {
+    const exercicio = exerciciosPersonalizados.find(item => item.nome === nome);
+    // As planilhas guardam o nome, então quem já tem o exercício continua com ele.
+    const pergunta = t('Tirar "{exercicio}" da lista? Quem já tem esse exercício na planilha continua com ele.', { exercicio: nome });
+    if (!exercicio || !confirm(pergunta)) {
+      return;
+    }
+    const { error } = await cliente.from(TABELA_PERSONALIZADOS).delete().eq('id', exercicio.id);
+    if (error) {
+      mostrarAviso(mensagemDoErro(error));
+      return;
+    }
+    exerciciosPersonalizados = exerciciosPersonalizados.filter(item => item.id !== exercicio.id);
+    desenharCatalogo();
+    mostrarAviso(t('"{exercicio}" saiu da lista.', { exercicio: nome }));
+  });
+}
+
+function preencherGruposDoCadastro() {
+  novoExercicioGrupo.replaceChildren(...Object.keys(CATALOGO).map(grupo => {
+    const opcao = document.createElement('option');
+    opcao.value = grupo;
+    opcao.textContent = t(grupo);
+    return opcao;
+  }));
+}
+
 async function carregarAdmin() {
+  await carregarPersonalizados();
   const { data, error } = await cliente.rpc('listar_usuarios');
   if (error) {
     mostrarAviso(mensagemDoErro(error));
@@ -222,7 +281,7 @@ async function carregarAdmin() {
   adminUsuario.replaceChildren(...usuariosAdmin.map(pessoa => {
     const opcao = document.createElement('option');
     opcao.value = pessoa.user_id;
-    opcao.textContent = pessoa.user_id === usuario.id ? `${pessoa.usuario} (você)` : pessoa.usuario;
+    opcao.textContent = pessoa.user_id === usuario.id ? t('{nome} (você)', { nome: pessoa.usuario }) : pessoa.usuario;
     return opcao;
   }));
   const proximo = manterAlvo ? alvoId : usuariosAdmin[0]?.user_id ?? null;
@@ -245,7 +304,8 @@ adminUsuario.addEventListener('change', () => {
 
 botaoExcluirConta.addEventListener('click', () => umaPorVez(async () => {
   const alvo = buscarAlvo();
-  if (!alvo || !confirm(`Excluir a conta de ${alvo.usuario}, com a planilha e todo o progresso? Isso não pode ser desfeito.`)) {
+  const pergunta = alvo && t('Excluir a conta de {nome}, com a planilha e todo o progresso? Isso não pode ser desfeito.', { nome: alvo.usuario });
+  if (!alvo || !confirm(pergunta)) {
     return;
   }
   const { error } = await cliente.rpc('admin_excluir_conta', { alvo: alvo.user_id });
@@ -255,7 +315,40 @@ botaoExcluirConta.addEventListener('click', () => umaPorVez(async () => {
   }
   alvoId = null;
   await carregarAdmin();
-  mostrarAviso(`A conta de ${alvo.usuario} foi excluída.`);
+  mostrarAviso(t('A conta de {nome} foi excluída.', { nome: alvo.usuario }));
 }));
 
 busca.addEventListener('input', desenharCatalogo);
+
+aoEnviar(formNovoExercicio, async () => {
+  // Espaços repetidos viram um só, para "Remada  baixa" não virar um exercício diferente.
+  const nome = novoExercicioNome.value.trim().replace(/\s+/g, ' ');
+  if (nome.length < 2) {
+    mostrarAviso(t('Digite o nome do exercício, com pelo menos 2 letras.'));
+    return;
+  }
+  if (todosExercicios().some(exercicio => normalizar(exercicio.nome) === normalizar(nome))) {
+    mostrarAviso(t('Esse exercício já está na lista.'));
+    return;
+  }
+
+  const { data, error } = await cliente
+    .from(TABELA_PERSONALIZADOS)
+    .insert({ nome, grupo: novoExercicioGrupo.value })
+    .select('id, nome, grupo')
+    .single();
+  if (error) {
+    mostrarAviso(mensagemDoErro(error));
+    return;
+  }
+
+  exerciciosPersonalizados = [...exerciciosPersonalizados, data].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+  formNovoExercicio.reset();
+  busca.value = nome;
+  grupoAtivo = TODOS;
+  desenharGrupos();
+  desenharCatalogo();
+  mostrarAviso(t('"{exercicio}" foi cadastrado e já está na lista.', { exercicio: nome }));
+});
+
+preencherGruposDoCadastro();

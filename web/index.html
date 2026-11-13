@@ -8,13 +8,14 @@
   <meta name="theme-color" content="#f1f2f4">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;1,700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/login.css">
   <link rel="stylesheet" href="css/layout.css">
   <link rel="stylesheet" href="css/treino.css">
   <link rel="stylesheet" href="css/perfil.css">
   <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/config.css">
   <script src="js/tema.js"></script>
 </head>
 <body class="modo-login">
@@ -33,6 +34,7 @@
       </g>
     </svg>
     <h1>Plano de Treino</h1>
+    <p class="marca-frase">Seu caderno de treino, semana a semana.</p>
   </header>
 
   <header id="sessao" class="topo" hidden>
@@ -41,11 +43,9 @@
       <p id="data-hoje" class="data-hoje"></p>
     </div>
     <div class="acoes-topo">
-      <button type="button" class="botao-tema">
-        <svg class="icone-lua" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="currentColor"/></svg>
-        <svg class="icone-sol" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <button type="button" id="abrir-config" class="botao-icone"aria-label="Abrir configurações" title="Abrir configurações">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.4 13a7.5 7.5 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3.3h-4l-.4 2.6a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.5 11a7.5 7.5 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1c.5.4 1.1.7 1.7 1l.4 2.6h4l.4-2.6c.6-.3 1.2-.6 1.7-1l2.5 1 2-3.5L19.4 13zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)" fill="currentColor"/></svg>
       </button>
-      <button type="button" id="sair" class="botao-sair">Sair</button>
     </div>
   </header>
 
@@ -154,6 +154,9 @@
         <div id="progresso" class="tabela-rolavel" tabindex="0" role="region" aria-label="Progressão de carga por exercício"></div>
         <p class="nota-tabela">Compara a maior carga da primeira e da última semana registradas.</p>
       </div>
+
+      <!-- Sair fica no fim do Perfil, longe do treino, para ninguém sair da conta sem querer. -->
+      <button type="button" id="sair" class="largura-total botao-sair">Sair</button>
     </section>
 
     <div id="aba-admin" class="colunas" hidden>
@@ -181,8 +184,77 @@
         <div id="grupos" class="grupos" role="group" aria-label="Filtrar por grupo muscular"></div>
         <p id="catalogo-vazio" class="vazio" hidden>Nenhum exercício encontrado.</p>
         <ul id="catalogo" class="lista"></ul>
+
+        <form id="form-novo-exercicio" class="novo-exercicio" novalidate>
+          <h3 class="subtitulo">Cadastrar exercício</h3>
+          <p class="total">Ele entra na lista acima e pode ser usado em qualquer planilha.</p>
+          <label class="busca-rotulo" for="novo-exercicio-nome">Nome</label>
+          <input type="text" id="novo-exercicio-nome" class="busca" maxlength="60" autocomplete="off" required>
+          <label class="busca-rotulo" for="novo-exercicio-grupo">Grupo muscular</label>
+          <select id="novo-exercicio-grupo" class="busca"></select>
+          <button type="submit" class="adicionar largura-total">Cadastrar</button>
+        </form>
       </section>
     </div>
+
+    <section id="aba-config" aria-labelledby="titulo-config" hidden>
+      <h2 id="titulo-config" class="titulo-pagina">Configurações</h2>
+
+      <div class="config-grupo">
+        <h3 class="subtitulo">Aparência</h3>
+        <label class="busca-rotulo" for="config-tema">Tema</label>
+        <select id="config-tema" class="busca">
+          <option value="auto">Automático (igual ao celular)</option>
+          <option value="claro">Claro</option>
+          <option value="escuro">Escuro</option>
+        </select>
+        <label class="busca-rotulo" for="config-idioma">Idioma</label>
+        <select id="config-idioma" class="busca">
+          <option value="pt">Português</option>
+          <option value="en">English</option>
+        </select>
+        <p class="nota-tabela">O app recarrega para trocar o idioma.</p>
+      </div>
+
+      <div class="config-grupo">
+        <h3 class="subtitulo">Treino</h3>
+        <label class="config-opcao"><input type="checkbox" id="config-anterior"> <span>Mostrar a semana passada nos campos</span></label>
+        <label class="config-opcao"><input type="checkbox" id="config-execucao"> <span>Mostrar o botão de execução</span></label>
+        <label class="config-opcao"><input type="checkbox" id="config-confirmar"> <span>Pedir confirmação ao concluir a semana</span></label>
+      </div>
+
+      <div id="config-admin" class="config-grupo" hidden>
+        <h3 class="subtitulo">Planilha (admin)</h3>
+        <label class="busca-rotulo" for="config-series">Séries ao adicionar um exercício</label>
+        <input type="text" id="config-series" class="busca" inputmode="numeric" autocomplete="off">
+        <label class="busca-rotulo" for="config-reps">Reps ao adicionar um exercício</label>
+        <input type="text" id="config-reps" class="busca" autocomplete="off" placeholder="8-12">
+        <p class="nota-tabela">Valem para os próximos exercícios adicionados neste aparelho.</p>
+      </div>
+
+      <div class="config-grupo">
+        <h3 class="subtitulo">Conta</h3>
+        <form id="form-trocar-senha" novalidate>
+          <label class="busca-rotulo" for="config-nova-senha">Nova senha</label>
+          <input type="password" id="config-nova-senha" class="busca" autocomplete="new-password" minlength="8" required>
+          <label class="busca-rotulo" for="config-confirmar-senha">Confirme a nova senha</label>
+          <input type="password" id="config-confirmar-senha" class="busca" autocomplete="new-password" minlength="8" required>
+          <button type="submit" class="adicionar largura-total">Salvar senha</button>
+        </form>
+        <button type="button" id="exportar-historico" class="largura-total">Exportar meu histórico</button>
+        <p class="nota-tabela">Baixa uma planilha com todas as suas cargas e repetições.</p>
+        <button type="button" id="sair-de-tudo" class="botao-texto botao-perigo">Sair de todos os aparelhos</button>
+      </div>
+
+      <div class="config-grupo">
+        <h3 class="subtitulo">Sobre</h3>
+        <dl class="config-sobre">
+          <dt>Versão</dt><dd>0.6.0</dd>
+          <dt>Fotos de execução</dt><dd>Free Exercise DB, domínio público</dd>
+          <dt>Código</dt><dd><a href="https://github.com/Sunshine22515/plano-treino" target="_blank" rel="noopener">github.com/Sunshine22515/plano-treino</a></dd>
+        </dl>
+      </div>
+    </section>
 
     <nav class="menu-inferior" aria-label="Seções do app">
       <button type="button" class="aba" data-aba="treino">
@@ -200,13 +272,31 @@
     </nav>
   </main>
 
-  <footer class="rodape">v0.5.0</footer>
+  <footer class="rodape">v0.6.0</footer>
+
+  <!-- Janela com as fotos que mostram a execução do exercício. -->
+  <dialog id="janela-demonstracao" class="janela" aria-labelledby="demonstracao-titulo">
+    <div class="janela-topo">
+      <h2 id="demonstracao-titulo"></h2>
+      <button type="button" id="fechar-demonstracao" class="botao-fechar" aria-label="Fechar">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="janela-foto">
+      <img id="demonstracao-foto" alt="">
+      <p id="demonstracao-carregando" class="janela-aviso">Carregando...</p>
+    </div>
+    <p class="janela-credito">Fotos: Free Exercise DB, domínio público.</p>
+  </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js" integrity="sha384-TcHRA3zBbn+Lexh5n+Oil4guNPOS3rjNDpGRAN46u/s/mB2IZ50ceC6TYDU2yvgK" crossorigin="anonymous"></script>
   <script src="config.js"></script>
   <!-- A ordem importa: cada arquivo usa o que os anteriores definiram. -->
+  <script src="js/idioma.js"></script>
   <script src="js/constantes.js"></script>
+  <script src="js/preferencias.js"></script>
   <script src="js/catalogo.js"></script>
+  <script src="js/demonstracoes.js"></script>
   <script src="js/elementos.js"></script>
   <script src="js/estado.js"></script>
   <script src="js/utilidades.js"></script>
@@ -214,6 +304,7 @@
   <script src="js/perfil.js"></script>
   <script src="js/admin.js"></script>
   <script src="js/conta.js"></script>
+  <script src="js/configuracoes.js"></script>
   <script src="js/iniciar.js"></script>
 </body>
 </html>

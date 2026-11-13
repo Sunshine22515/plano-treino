@@ -1,0 +1,76 @@
+/* Tela de Configurações: grupos separados por traços, como as seções do caderno. */
+
+#aba-config {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.config-grupo {
+  margin-bottom: 8px;
+  padding-top: 4px;
+  border-top: 2px solid var(--texto);
+}
+
+.config-grupo .subtitulo {
+  margin-top: 12px;
+}
+
+.config-grupo .busca {
+  margin-bottom: 12px;
+}
+
+.config-grupo .nota-tabela {
+  margin: -4px 0 16px;
+}
+
+/* Cada opção de ligar e desligar ocupa uma linha inteira, fácil de tocar. */
+.config-opcao {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  border-bottom: 1px solid var(--linha);
+  cursor: pointer;
+}
+
+.config-opcao:last-child {
+  margin-bottom: 16px;
+}
+
+.config-opcao input {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--acento);
+}
+
+.config-grupo form {
+  margin-bottom: 12px;
+}
+
+.config-grupo .botao-perigo {
+  margin: 4px 0 16px;
+}
+
+.config-sobre {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 16px;
+  margin: 0 0 16px;
+  font-size: 0.9375rem;
+}
+
+.config-sobre dt {
+  color: var(--texto-suave);
+}
+
+.config-sobre dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.config-sobre a {
+  color: var(--texto);
+  text-underline-offset: 3px;
+}

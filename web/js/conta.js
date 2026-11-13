@@ -14,6 +14,8 @@ function mostrarAba(nome) {
       botao.removeAttribute('aria-current');
     }
   });
+  // As Configurações abrem pela engrenagem do topo, que fica marcada enquanto estão abertas.
+  botaoAbrirConfig.setAttribute('aria-pressed', String(nome === 'config'));
 }
 
 async function carregarDados(idUsuario) {
@@ -34,7 +36,7 @@ async function carregarDados(idUsuario) {
     return;
   }
   if (!dadosPerfil.data) {
-    mostrarAviso('Esta conta não tem nome de usuário. Fale com o admin.');
+    mostrarAviso(t('Esta conta não tem nome de usuário. Fale com o admin.'));
     return;
   }
 
@@ -42,7 +44,7 @@ async function carregarDados(idUsuario) {
   planilha = plano.data;
   registros = historico.data;
   series = seriesFeitas.data;
-  nomeUsuario.textContent = `Olá, ${perfil.usuario}.`;
+  nomeUsuario.textContent = perfil.usuario;
   botaoAbaAdmin.hidden = perfil.papel !== 'admin';
   mostrarAba('treino');
   desenharTreino();
@@ -68,6 +70,7 @@ function limparDados() {
   alvoId = null;
   planilhaAlvo = [];
   seriesAlvo = [];
+  exerciciosPersonalizados = [];
   botaoAbaAdmin.hidden = true;
   nomeUsuario.textContent = '';
   mostrarAba('treino');
@@ -84,7 +87,7 @@ async function encerrarSessaoDaConfirmacao() {
   encerrandoConfirmacao = false;
   telaContaAtiva = 'entrar';
   aplicarSessao(null);
-  mostrarAviso('Sua conta está pronta! Entre com seu usuário e senha.');
+  mostrarAviso(t('Sua conta está pronta! Entre com seu usuário e senha.'));
 }
 
 function aplicarSessao(novaSessao) {
@@ -118,11 +121,11 @@ function iniciar() {
     document.getElementById('esqueci-senha').remove();
   }
   if (!window.supabase) {
-    mostrarAviso('Não foi possível carregar o app. Confira sua conexão e recarregue a página.');
+    mostrarAviso(t('Não foi possível carregar o app. Confira sua conexão e recarregue a página.'));
     return;
   }
   if (!SUPABASE_URL.startsWith('https://')) {
-    mostrarAviso('Falta configurar o Supabase no arquivo config.js.');
+    mostrarAviso(t('Falta configurar o Supabase no arquivo config.js.'));
     return;
   }
   // Lido antes de criar o cliente, porque ele limpa esse trecho do endereço.
@@ -151,7 +154,7 @@ aoEnviar(formEntrar, async () => {
   const nome = document.getElementById('entrar-usuario').value.trim();
   const senha = document.getElementById('entrar-senha').value;
   if (!nome || !senha) {
-    mostrarAviso('Preencha o nome de usuário e a senha.');
+    mostrarAviso(t('Preencha o nome de usuário e a senha.'));
     return;
   }
   const { data, error } = await cliente.functions.invoke('entrar', {
@@ -174,19 +177,19 @@ aoEnviar(formCadastro, async () => {
   const nome = document.getElementById('cadastro-usuario').value.trim().toLowerCase();
   const senha = document.getElementById('cadastro-senha').value;
   if (!/^[a-z0-9_]{3,20}$/.test(nome)) {
-    mostrarAviso('O nome de usuário precisa ter de 3 a 20 letras sem acento, números ou _, sem espaços.');
+    mostrarAviso(t('O nome de usuário precisa ter de 3 a 20 letras sem acento, números ou _, sem espaços.'));
     return;
   }
   if (USAR_EMAIL && !document.getElementById('cadastro-email').checkValidity()) {
-    mostrarAviso('Digite um e-mail válido.');
+    mostrarAviso(t('Digite um e-mail válido.'));
     return;
   }
   if (senha.length < TAMANHO_MINIMO_SENHA) {
-    mostrarAviso(`A senha precisa ter pelo menos ${TAMANHO_MINIMO_SENHA} caracteres.`);
+    mostrarAviso(t('A senha precisa ter pelo menos {n} caracteres.', { n: TAMANHO_MINIMO_SENHA }));
     return;
   }
   if (senha !== document.getElementById('cadastro-confirmar').value) {
-    mostrarAviso('As senhas não são iguais.');
+    mostrarAviso(t('As senhas não são iguais.'));
     return;
   }
 
@@ -202,7 +205,7 @@ aoEnviar(formCadastro, async () => {
     formCadastro.reset();
     telaContaAtiva = 'entrar';
     mostrarTelas();
-    mostrarAviso('Sua conta está pronta! Entre com seu usuário e senha.');
+    mostrarAviso(t('Sua conta está pronta! Entre com seu usuário e senha.'));
     return;
   }
 
@@ -212,7 +215,7 @@ aoEnviar(formCadastro, async () => {
     return;
   }
   if (!disponivel) {
-    mostrarAviso('Esse nome de usuário já está em uso.');
+    mostrarAviso(t('Esse nome de usuário já está em uso.'));
     return;
   }
 
@@ -238,14 +241,14 @@ aoEnviar(formCadastro, async () => {
   // Sem sessão, o Supabase está esperando a confirmação do e-mail.
   if (!data.session) {
     confirmandoCadastro = false;
-    mostrarAviso('Enviamos um link de confirmação para o seu e-mail. Se esse e-mail já tiver conta, entre com o seu usuário.');
+    mostrarAviso(t('Enviamos um link de confirmação para o seu e-mail. Se esse e-mail já tiver conta, entre com o seu usuário.'));
   }
 });
 
 aoEnviar(formRecuperar, async () => {
   const campo = document.getElementById('recuperar-email');
   if (!campo.checkValidity()) {
-    mostrarAviso('Digite um e-mail válido.');
+    mostrarAviso(t('Digite um e-mail válido.'));
     return;
   }
   const { error } = await cliente.auth.resetPasswordForEmail(campo.value.trim(), {
@@ -257,12 +260,12 @@ aoEnviar(formRecuperar, async () => {
   }
   formRecuperar.reset();
   // A mensagem é a mesma com ou sem conta, para não revelar quais e-mails estão cadastrados.
-  mostrarAviso('Se esse e-mail tiver conta, enviamos um link para criar uma nova senha.');
+  mostrarAviso(t('Se esse e-mail tiver conta, enviamos um link para criar uma nova senha.'));
 });
 
 aoEnviar(formNovaSenha, async () => {
   if (campoNovaSenha.value.length < TAMANHO_MINIMO_SENHA) {
-    mostrarAviso(`A senha precisa ter pelo menos ${TAMANHO_MINIMO_SENHA} caracteres.`);
+    mostrarAviso(t('A senha precisa ter pelo menos {n} caracteres.', { n: TAMANHO_MINIMO_SENHA }));
     return;
   }
   const { error } = await cliente.auth.updateUser({ password: campoNovaSenha.value });
@@ -273,10 +276,14 @@ aoEnviar(formNovaSenha, async () => {
   formNovaSenha.reset();
   modoRecuperacao = false;
   mostrarTelas();
-  mostrarAviso('Senha alterada.');
+  mostrarAviso(t('Senha alterada.'));
 });
 
 botaoSair.addEventListener('click', async () => {
+  // Pergunta antes, para um toque sem querer não tirar a pessoa da conta.
+  if (!confirm(t('Sair da sua conta? Para voltar, você vai precisar do usuário e da senha.'))) {
+    return;
+  }
   const { error } = await cliente.auth.signOut();
   mostrarAviso(error ? mensagemDoErro(error) : '');
 });

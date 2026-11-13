@@ -10,7 +10,11 @@
 .busca {
   width: 100%;
   min-height: 44px;
-  padding: 0 16px;
+  padding: 0 12px;
+}
+
+#aba-admin h2 {
+  margin-bottom: 12px;
 }
 
 #admin-semana {
@@ -20,31 +24,52 @@
 .grupos {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
   margin: 12px 0;
 }
 
 .grupo {
   min-height: 40px;
-  padding: 0 14px;
-  font-size: 0.8125rem;
+  padding: 0 12px;
+  border-color: var(--borda);
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
 .grupo[aria-pressed="true"] {
-  border-color: var(--preto);
-  background: var(--preto);
-  color: var(--sobre-preto);
+  border-color: var(--texto);
+  background: var(--texto);
+  color: var(--fundo);
+}
+
+.item-acoes {
+  display: flex;
+  flex: none;
+  gap: 8px;
+}
+
+.botao-discreto {
+  border-color: var(--borda);
+  color: var(--texto-suave);
+  font-weight: 500;
+}
+
+.novo-exercicio {
+  margin-top: 24px;
+  padding-top: 4px;
+  border-top: 2px solid var(--texto);
+}
+
+.novo-exercicio .total {
+  margin-bottom: 12px;
+}
+
+.novo-exercicio .busca {
+  margin-bottom: 12px;
 }
 
 .botao-perigo {
-  margin-top: 20px;
-  border-color: var(--perigo);
-  background: none;
-  color: var(--perigo);
-}
-
-.rodape {
   margin-top: 24px;
-  font-size: 0.75rem;
-  text-align: center;
+  border-color: var(--perigo);
+  color: var(--perigo);
 }

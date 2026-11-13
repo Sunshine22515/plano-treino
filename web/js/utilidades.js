@@ -19,7 +19,7 @@ function aoEnviar(form, acao) {
     }
     const texto = botao.textContent;
     botao.disabled = true;
-    botao.textContent = 'Aguarde...';
+    botao.textContent = t('Aguarde...');
     let limite;
     const tempoEsgotado = new Promise((_resolver, rejeitar) => {
       limite = setTimeout(() => rejeitar(new Error('Tempo esgotado')), TEMPO_LIMITE_MS);
@@ -55,7 +55,8 @@ async function umaPorVez(acao) {
 function mensagemDoErro(erro) {
   console.error(erro);
   // O código ajuda a identificar o problema no celular, onde não há console para ler.
-  return MENSAGENS_ERRO[erro.code] || `Algo deu errado (${erro.code || erro.message}). Confira sua conexão e tente de novo.`;
+  return MENSAGENS_ERRO[erro.code] ||
+    t('Algo deu errado ({codigo}). Confira sua conexão e tente de novo.', { codigo: erro.code || erro.message });
 }
 
 // Em respostas de erro de uma função do servidor, o motivo vem no corpo da resposta.
@@ -64,8 +65,18 @@ async function mensagemDaFuncao(erro) {
   return mensagemDoErro(corpo?.code ? corpo : erro);
 }
 
+// A lista fixa do app mais os exercícios que o admin cadastrou.
+function todosExercicios() {
+  return [...EXERCICIOS, ...exerciciosPersonalizados.map(({ nome, grupo }) => ({ nome, grupo, personalizado: true }))];
+}
+
 function buscarExercicio(nome) {
-  return EXERCICIOS.find(exercicio => exercicio.nome === nome) || { nome, grupo: 'Outros' };
+  return todosExercicios().find(exercicio => exercicio.nome === nome) || { nome, grupo: 'Outros' };
+}
+
+// Quantos exercícios, já no idioma escolhido: "3 exercícios" ou "3 exercises".
+function quantosExercicios(quantidade) {
+  return plural(quantidade, t('exercício'), t('exercícios'));
 }
 
 function limitar(valor, padrao) {
@@ -95,7 +106,7 @@ function plural(quantidade, singular, varios) {
 function formatarCarga(registro) {
   const partes = [];
   if (registro.carga !== null) {
-    partes.push(`${String(registro.carga).replace('.', ',')} kg`);
+    partes.push(`${formatarCargaCampo(registro.carga)} kg`);
   }
   if (registro.repeticoes !== null) {
     partes.push(`${registro.repeticoes} reps`);
@@ -107,8 +118,12 @@ function temValores(serie) {
   return serie.carga !== null || serie.repeticoes !== null;
 }
 
+// Em português a casa decimal é vírgula (42,5); em inglês, ponto (42.5).
 function formatarCargaCampo(carga) {
-  return carga === null || carga === undefined ? '' : String(carga).replace('.', ',');
+  if (carga === null || carga === undefined) {
+    return '';
+  }
+  return IDIOMA === 'en' ? String(carga) : String(carga).replace('.', ',');
 }
 
 function criarInfo(exercicio) {
@@ -116,10 +131,10 @@ function criarInfo(exercicio) {
   info.className = 'item-info';
   const nome = document.createElement('span');
   nome.className = 'item-nome';
-  nome.textContent = exercicio.nome;
+  nome.textContent = nomeExercicio(exercicio.nome);
   const grupo = document.createElement('span');
   grupo.className = 'item-grupo';
-  grupo.textContent = exercicio.grupo;
+  grupo.textContent = t(exercicio.grupo);
   info.append(nome, grupo);
   return info;
 }

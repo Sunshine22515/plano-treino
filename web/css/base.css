@@ -1,20 +1,24 @@
-/* Cores, fontes e estilos básicos de botões e campos. */
+/* Cores, fontes e estilos básicos de botões e campos. Branco, prata e preto, com blocos em formato de caderno. */
 
 :root {
   --fundo: #f1f2f4;
   --superficie: #ffffff;
   --superficie-clara: #e8eaed;
   --borda: #cfd2d7;
+  --linha: #dfe1e5;
   --texto: #0c0c0e;
   --texto-suave: #55585f;
-  --preto: #0c0c0e;
-  --sobre-preto: #ffffff;
+  --acento: #0c0c0e;
+  --sobre-acento: #ffffff;
   --prata: linear-gradient(145deg, #ffffff 0%, #e4e6ea 50%, #b8bcc3 100%);
   --perigo: #b3261e;
   --dica-campo: #74777e;
   --barra-trilho: rgb(0 0 0 / 8%);
   --barra-valor: rgb(0 0 0 / 38%);
-  --raio: 20px;
+  --fonte-texto: Barlow, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --fonte-titulo: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  --fonte-numero: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  --raio: 6px;
   color-scheme: light;
 }
 
@@ -24,36 +28,17 @@
   --superficie: #1a1c1f;
   --superficie-clara: #26292d;
   --borda: #34373c;
+  --linha: #2a2d31;
   --texto: #f2f3f5;
   --texto-suave: #a7abb3;
-  --preto: #f2f3f5;
-  --sobre-preto: #0e0f11;
+  --acento: #f2f3f5;
+  --sobre-acento: #0e0f11;
   --prata: linear-gradient(145deg, #2d3035 0%, #1e2024 50%, #121315 100%);
   --perigo: #ff8a80;
   --dica-campo: #8a8e96;
   --barra-trilho: rgb(255 255 255 / 8%);
   --barra-valor: rgb(255 255 255 / 38%);
   color-scheme: dark;
-}
-
-.botao-tema {
-  display: inline-flex;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  padding: 0;
-}
-
-.botao-tema svg {
-  width: 20px;
-  height: 20px;
-}
-
-/* Mostra a lua no tema claro e o sol no escuro: o ícone indica para qual tema o botão leva. */
-:root[data-tema="escuro"] .icone-lua,
-:root:not([data-tema="escuro"]) .icone-sol {
-  display: none;
 }
 
 * {
@@ -67,10 +52,12 @@
 body {
   margin: 0;
   min-height: 100vh;
-  padding: 24px 16px 104px;
+  padding: 24px 16px 96px;
   background: var(--fundo);
   color: var(--texto);
-  font-family: Poppins, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--fonte-texto);
+  font-size: 1rem;
+  line-height: 1.45;
 }
 
 h1,
@@ -80,26 +67,34 @@ p {
   margin: 0;
 }
 
-h2 {
-  font-size: 1.125rem;
+h1,
+h2,
+h3 {
+  font-family: var(--fonte-titulo);
   font-weight: 700;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+h2 {
+  font-size: 1.375rem;
+  line-height: 1.15;
 }
 
 button {
   min-height: 44px;
   padding: 0 16px;
-  border: 1px solid var(--borda);
-  border-radius: 999px;
-  background: var(--superficie-clara);
+  border: 1.5px solid var(--texto);
+  border-radius: var(--raio);
+  background: transparent;
   color: var(--texto);
   font: inherit;
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
 }
 
 button:hover:not(:disabled) {
-  border-color: var(--preto);
+  background: var(--superficie-clara);
 }
 
 button:disabled {
@@ -111,34 +106,68 @@ input:focus-visible,
 select:focus-visible,
 textarea:focus-visible,
 .tabela-rolavel:focus-visible {
-  outline: 2px solid var(--preto);
+  outline: 2px solid var(--acento);
   outline-offset: 2px;
 }
 
 input,
 select,
 textarea {
-  border: 1px solid var(--borda);
-  border-radius: 14px;
+  border: 1.5px solid var(--borda);
+  border-radius: var(--raio);
   background: var(--superficie);
   color: var(--texto);
   font: inherit;
 }
 
 .adicionar {
-  border: 0;
-  background: var(--preto);
-  color: var(--sobre-preto);
-  font-weight: 600;
+  border-color: var(--acento);
+  background: var(--acento);
+  color: var(--sobre-acento);
+}
+
+.adicionar:hover:not(:disabled) {
+  border-color: var(--acento);
+  background: var(--acento);
+  filter: brightness(1.08);
 }
 
 .adicionar[aria-pressed="true"] {
-  border: 1px solid var(--borda);
-  background: var(--superficie-clara);
+  border-color: var(--texto);
+  background: transparent;
   color: var(--texto);
-  font-weight: 500;
 }
 
 .adicionar:disabled {
   opacity: 0.5;
+}
+
+.botao-tema,
+.botao-icone {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  padding: 0;
+  border-color: var(--borda);
+}
+
+/* O botão da tela aberta fica preenchido, como as abas do menu. */
+.botao-icone[aria-pressed="true"] {
+  border-color: var(--acento);
+  background: var(--acento);
+  color: var(--sobre-acento);
+}
+
+.botao-tema svg,
+.botao-icone svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Mostra a lua no tema claro e o sol no escuro: o ícone indica para qual tema o botão leva. */
+:root[data-tema="escuro"] .icone-lua,
+:root:not([data-tema="escuro"]) .icone-sol {
+  display: none;
 }

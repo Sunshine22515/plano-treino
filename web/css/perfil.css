@@ -1,7 +1,7 @@
 /* Aba Perfil: resumo e tabela de progressão. */
 
 .perfil-rotulo {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: var(--texto-suave);
 }
 
@@ -10,38 +10,44 @@
 }
 
 .perfil-resumo {
-  font-size: 0.875rem;
+  padding-bottom: 16px;
+  border-bottom: 1.5px solid var(--borda);
 }
 
 .perfil-resumo strong {
   display: block;
-  font-size: 2.5rem;
-  font-weight: 700;
-  line-height: 1.2;
+  margin: 2px 0;
+  font-family: var(--fonte-numero);
+  font-size: 3rem;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--acento);
 }
 
-#progresso-cartao {
-  margin-top: 12px;
-}
-
-.tabela-progresso .progressao-valor {
-  font-size: 1rem;
-  font-weight: 700;
-}
-
-.nota-tabela {
-  margin-top: 8px;
-  font-size: 0.75rem;
+#perfil-resumo-detalhe {
   color: var(--texto-suave);
 }
 
+#progresso-cartao {
+  margin-top: 24px;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
 .subtitulo {
-  margin: 20px 0 8px;
-  font-size: 1rem;
+  margin: 24px 0 8px;
+  font-size: 1.125rem;
 }
 
 #progresso-cartao .subtitulo {
   margin-top: 0;
+}
+
+.nota-tabela {
+  margin-top: 10px;
+  font-size: 0.8125rem;
+  color: var(--texto-suave);
 }
 
 .tabela-rolavel {
@@ -51,18 +57,30 @@
 .tabela-progresso {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;
+}
+
+.tabela-progresso thead th {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--texto-suave);
 }
 
 .tabela-progresso th,
 .tabela-progresso td {
-  padding: 8px 6px;
-  border-bottom: 1px solid var(--borda);
+  padding: 10px 6px;
+  border-bottom: 1px solid var(--linha);
   text-align: left;
   white-space: nowrap;
 }
 
-.tabela-progresso th {
+.tabela-progresso thead th {
+  border-bottom: 2px solid var(--texto);
+}
+
+.tabela-progresso tbody th {
   font-weight: 600;
 }
 
@@ -77,9 +95,16 @@
   text-align: right;
 }
 
+.tabela-progresso .progressao-valor {
+  font-family: var(--fonte-numero);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
 .progresso-detalhe {
   display: block;
   margin-top: 2px;
+  font-family: var(--fonte-numero);
   font-size: 0.75rem;
   font-weight: 400;
   color: var(--texto-suave);

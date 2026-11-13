@@ -1,4 +1,4 @@
-/* Estrutura do app: topo, avisos, menu inferior e cartões. */
+/* Estrutura do app: topo, avisos, menu inferior e blocos. */
 
 .topo,
 .app,
@@ -11,7 +11,7 @@
 
 .topo {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 20px;
@@ -23,14 +23,16 @@
 
 .nome-usuario {
   overflow-wrap: anywhere;
-  font-size: 1.5rem;
-  font-style: italic;
+  font-family: var(--fonte-titulo);
+  font-size: 2rem;
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.05;
+  text-transform: uppercase;
 }
 
 .data-hoje {
-  font-size: 0.8125rem;
+  margin-top: 2px;
+  font-size: 0.875rem;
   color: var(--texto-suave);
 }
 
@@ -45,14 +47,15 @@
 }
 
 .botao-sair {
-  flex: none;
+  margin-top: 40px;
+  border-color: var(--borda);
 }
 
 .aviso {
   margin-bottom: 16px;
-  padding: 12px 16px;
-  border: 1px solid var(--preto);
-  border-radius: 14px;
+  padding: 12px 14px;
+  border-left: 4px solid var(--acento);
+  border-radius: var(--raio);
   background: var(--superficie);
   color: var(--texto);
 }
@@ -65,45 +68,53 @@
 
 .titulo-pagina {
   margin-bottom: 16px;
-  font-size: 1.5rem;
-  font-style: italic;
+  font-size: 2rem;
 }
 
 .colunas {
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-items: start;
-  gap: 16px;
+  gap: 24px;
 }
 
+/* Menu inferior: uma faixa simples, presa à borda da tela. */
 .menu-inferior {
   position: fixed;
-  right: 16px;
-  bottom: 16px;
-  left: 16px;
+  right: 0;
+  bottom: 0;
+  left: 0;
   z-index: 10;
   display: flex;
-  gap: 4px;
-  max-width: 480px;
-  margin: 0 auto;
-  padding: 6px;
-  border: 1px solid var(--borda);
-  border-radius: 999px;
-  background: var(--superficie);
+  padding: 0 8px env(safe-area-inset-bottom);
+  border-top: 1.5px solid var(--texto);
+  background: var(--fundo);
 }
 
 .aba {
   display: flex;
   flex: 1;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 2px;
   min-width: 0;
+  min-height: 60px;
   padding: 0 8px;
   border: 0;
+  border-top: 3px solid transparent;
+  border-radius: 0;
   background: none;
   color: var(--texto-suave);
-  font-size: 0.8125rem;
+  font-family: var(--fonte-titulo);
+  font-size: 0.9375rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.aba:hover:not(:disabled) {
+  background: none;
+  color: var(--texto);
 }
 
 .aba svg {
@@ -113,16 +124,16 @@
 }
 
 .aba[aria-current="page"] {
-  background: var(--preto);
-  color: var(--sobre-preto);
+  border-top-color: var(--acento);
+  color: var(--texto);
 }
 
-/* Cartões */
+/* Blocos */
 
 .painel {
   min-width: 0;
   padding: 16px;
-  border: 1px solid var(--borda);
+  border: 1.5px solid var(--borda);
   border-radius: var(--raio);
   background: var(--superficie);
 }
@@ -140,47 +151,57 @@
 }
 
 .secao-topo {
-  margin: 24px 0 12px;
+  margin: 28px 0 4px;
 }
 
 .cartao-destaque {
-  padding: 16px;
-  border: 1px solid var(--borda);
-  border-radius: var(--raio);
-  background: var(--prata);
+  padding: 16px 0 0;
+  border-top: 2px solid var(--texto);
 }
 
-.cartao-destaque .total {
-  color: var(--texto);
-}
-
+/* Resumo: três números lado a lado, separados por traços, como a capa de uma ficha. */
 .resumo {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 20px;
+  border-top: 2px solid var(--texto);
+  border-bottom: 1.5px solid var(--borda);
 }
 
 .resumo-cartao {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding: 14px 10px;
-  border: 1px solid var(--borda);
-  border-radius: 16px;
-  background: var(--prata);
-  text-align: center;
+  padding: 12px 10px;
+}
+
+.resumo-cartao + .resumo-cartao {
+  border-left: 1.5px solid var(--borda);
+}
+
+.resumo-cartao:first-child {
+  padding-left: 0;
 }
 
 .resumo-cartao strong {
-  font-size: 1.375rem;
-  font-weight: 700;
+  font-family: var(--fonte-numero);
+  font-size: 1.5rem;
+  font-weight: 600;
   line-height: 1.2;
 }
 
 .resumo-cartao span {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   line-height: 1.3;
+  color: var(--texto-suave);
+}
+
+.rodape {
+  margin-top: 24px;
+  font-family: var(--fonte-numero);
+  font-size: 0.75rem;
+  text-align: center;
+  color: var(--texto-suave);
 }
 
 @media (max-width: 720px) {

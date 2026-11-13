@@ -37,10 +37,14 @@ web/                     O app em si (é o que vai para dentro do .apk)
     treino.css           Aba Treino
     perfil.css           Aba Perfil
     admin.css            Aba Admin
+    config.css           Tela de Configurações
   js/                    Carregados nesta ordem pelo index.html
     tema.js              Tema claro ou escuro (carrega antes, no <head>)
+    idioma.js            Português ou inglês, e o nome dos exercícios em inglês
     constantes.js        Tabelas, padrões, mensagens e dias da semana
+    preferencias.js      Escolhas das Configurações, salvas no aparelho
     catalogo.js          Lista de exercícios
+    demonstracoes.js     Fotos de execução de cada exercício
     elementos.js         Elementos da página
     estado.js            Dados que mudam com o uso
     utilidades.js        Funções usadas por várias telas
@@ -48,6 +52,7 @@ web/                     O app em si (é o que vai para dentro do .apk)
     perfil.js            Aba Perfil
     admin.js             Aba Admin
     conta.js             Login, cadastro, sessão e troca de telas
+    configuracoes.js     Tela de Configurações
     iniciar.js           Liga o menu e inicia o app
 supabase/
   migrations/            SQL do banco, para rodar na ordem dos números

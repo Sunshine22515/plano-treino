@@ -12,6 +12,7 @@ let usuariosAdmin = [];
 let alvoId = null;
 let planilhaAlvo = [];
 let seriesAlvo = [];
+let exerciciosPersonalizados = [];
 let diaAdmin = 1;
 let grupoAtivo = TODOS;
 let ocupado = false;

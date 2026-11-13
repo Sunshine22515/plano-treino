@@ -30,7 +30,7 @@ function calcularProgressao(lista) {
 function formatarPercentual(valor) {
   const arredondado = Math.round(valor * 10) / 10;
   const sinal = arredondado > 0 ? '+' : '';
-  return `${sinal}${arredondado.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`;
+  return `${sinal}${arredondado.toLocaleString(LOCALIDADE, { maximumFractionDigits: 1 })}%`;
 }
 
 function desenharTabelaProgresso(recipiente, vazio, listaSeries) {
@@ -45,7 +45,7 @@ function desenharTabelaProgresso(recipiente, vazio, listaSeries) {
   tabela.className = 'tabela-progresso';
 
   const cabecalho = tabela.createTHead().insertRow();
-  ['Exercício', 'Progressão'].forEach(texto => {
+  [t('Exercício'), t('Progressão')].forEach(texto => {
     const celula = document.createElement('th');
     celula.scope = 'col';
     celula.textContent = texto;
@@ -57,12 +57,17 @@ function desenharTabelaProgresso(recipiente, vazio, listaSeries) {
     const fileira = corpo.insertRow();
     const nome = document.createElement('th');
     nome.scope = 'row';
-    nome.textContent = linha.exercicio;
+    nome.textContent = nomeExercicio(linha.exercicio);
     const detalhe = document.createElement('span');
     detalhe.className = 'progresso-detalhe';
     detalhe.textContent = linha.primeira === linha.ultima
-      ? `Semana ${linha.primeira}: ${formatarCargaCampo(linha.cargaFinal)} kg`
-      : `Semana ${linha.primeira} a ${linha.ultima}: ${formatarCargaCampo(linha.cargaInicial)} → ${formatarCargaCampo(linha.cargaFinal)} kg`;
+      ? t('Semana {a}: {carga} kg', { a: linha.primeira, carga: formatarCargaCampo(linha.cargaFinal) })
+      : t('Semana {a} a {b}: {inicial} → {final} kg', {
+        a: linha.primeira,
+        b: linha.ultima,
+        inicial: formatarCargaCampo(linha.cargaInicial),
+        final: formatarCargaCampo(linha.cargaFinal)
+      });
     nome.append(detalhe);
     fileira.append(nome);
     const progressao = fileira.insertCell();
@@ -88,7 +93,9 @@ function desenharProgresso() {
   const media = comPercentual.reduce((soma, linha) => soma + linha.percentual, 0) / comPercentual.length;
   const primeira = Math.min(...comPercentual.map(linha => linha.primeira));
   const ultima = Math.max(...comPercentual.map(linha => linha.ultima));
-  perfilResumoPeriodo.textContent = `Da semana ${primeira} à semana ${ultima}`;
+  perfilResumoPeriodo.textContent = t('Da semana {a} à semana {b}', { a: primeira, b: ultima });
   perfilResumoValor.textContent = formatarPercentual(media);
-  perfilResumoDetalhe.textContent = `de progressão de carga, em média de ${plural(comPercentual.length, 'exercício', 'exercícios')}`;
+  perfilResumoDetalhe.textContent = t('de progressão de carga, em média de {exercicios}', {
+    exercicios: quantosExercicios(comPercentual.length)
+  });
 }
