@@ -48,6 +48,7 @@ web/                     O app em si (é o que vai para dentro do .apk)
     elementos.js         Elementos da página
     estado.js            Dados que mudam com o uso
     utilidades.js        Funções usadas por várias telas
+    descanso.js          Timer de descanso entre os sets
     treino.js            Aba Treino
     perfil.js            Aba Perfil
     admin.js             Aba Admin

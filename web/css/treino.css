@@ -136,13 +136,19 @@
   color: var(--texto-suave);
 }
 
+.exercicio-botoes {
+  display: flex;
+  flex: none;
+  gap: 6px;
+  margin-left: auto;
+}
+
 .botao-demonstracao {
   display: inline-flex;
   flex: none;
   align-items: center;
   gap: 4px;
   min-height: 32px;
-  margin-left: auto;
   padding: 0 10px 0 6px;
   border-color: var(--borda);
   font-family: var(--fonte-titulo);
@@ -296,6 +302,84 @@
 
 .vazio {
   margin: 16px 0;
+}
+
+/* Timer de descanso: faixa invertida (preta no claro, branca no escuro) presa logo acima do menu. */
+.barra-descanso {
+  position: fixed;
+  right: 0;
+  bottom: calc(61.5px + env(safe-area-inset-bottom));
+  left: 0;
+  z-index: 11;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--acento);
+  color: var(--sobre-acento);
+}
+
+.descanso-info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.descanso-rotulo {
+  font-family: var(--fonte-titulo);
+  font-size: 0.875rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.descanso-exercicio {
+  overflow: hidden;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.descanso-tempo {
+  font-family: var(--fonte-numero);
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.terminou .descanso-tempo {
+  font-family: var(--fonte-titulo);
+  font-size: 1.125rem;
+  text-transform: uppercase;
+}
+
+.descanso-acoes {
+  display: flex;
+  flex: none;
+  gap: 6px;
+}
+
+.descanso-acoes button {
+  min-height: 40px;
+  padding: 0 10px;
+  border-color: var(--sobre-acento);
+  color: var(--sobre-acento);
+}
+
+.descanso-acoes button:hover:not(:disabled) {
+  background: transparent;
+  opacity: 0.8;
+}
+
+/* O +15s não faz sentido depois que o tempo acabou. */
+.terminou #descanso-mais {
+  display: none;
+}
+
+/* Espaço extra no fim da página, para a faixa não cobrir o último campo. */
+body.com-descanso {
+  padding-bottom: 170px;
 }
 
 /* Janela de execução: uma folha no meio da tela, com o nome em cima e as fotos alternando. */

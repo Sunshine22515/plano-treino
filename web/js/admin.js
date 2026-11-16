@@ -16,16 +16,26 @@ function criarCamposAdmin(item) {
   repeticoes.placeholder = '6-8';
   const rir = criarEntrada(item.rir, 'text', t('RIR por série de {exercicio}', nome));
   rir.placeholder = '0-1-1';
+  const descanso = criarEntrada(formatarTempo(item.descanso), 'text', t('Descanso entre os sets de {exercicio}', nome));
+  descanso.placeholder = '1:30';
+
+  // O descanso aparece como "1:30"; os outros campos, como foram salvos.
+  const mostrar = (coluna, valor) => {
+    if (coluna === 'descanso') {
+      return formatarTempo(valor);
+    }
+    return valor === null || valor === undefined ? '' : String(valor);
+  };
 
   const salvar = async (coluna, valor, entrada, anterior) => {
     const { error } = await cliente.from(TABELA_PLANO).update({ [coluna]: valor }).eq('id', item.id);
     if (error) {
-      entrada.value = anterior === null ? '' : String(anterior);
+      entrada.value = mostrar(coluna, anterior);
       mostrarAviso(mensagemDoErro(error));
       return;
     }
     item[coluna] = valor;
-    entrada.value = valor === null ? '' : String(valor);
+    entrada.value = mostrar(coluna, valor);
     mostrarAviso('');
   };
 
@@ -53,7 +63,22 @@ function criarCamposAdmin(item) {
     salvar('rir', texto === '' ? null : texto, rir, item.rir);
   });
 
-  numeros.append(criarCampo(t('Séries'), series), criarCampo(t('Reps'), repeticoes), criarCampo(t('RIR'), rir));
+  descanso.addEventListener('change', () => {
+    const segundos = lerTempo(descanso.value);
+    if (segundos === undefined) {
+      descanso.value = formatarTempo(item.descanso);
+      mostrarAviso(t('Use o descanso em segundos (90) ou em minutos e segundos (1:30), até 15:00. Também pode ficar vazio.'));
+      return;
+    }
+    salvar('descanso', segundos, descanso, item.descanso ?? null);
+  });
+
+  numeros.append(
+    criarCampo(t('Séries'), series),
+    criarCampo(t('Reps'), repeticoes),
+    criarCampo(t('RIR'), rir),
+    criarCampo(t('Descanso'), descanso)
+  );
   return numeros;
 }
 

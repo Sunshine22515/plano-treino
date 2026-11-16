@@ -110,6 +110,10 @@ async function salvarSerie(item, numero, campos, situacao) {
   mostrarSalvo(situacao);
   atualizarResumo();
   desenharProgresso();
+  // Anotar as reps quer dizer que o set acabou: o descanso começa sozinho, se a pessoa não desligou isso.
+  if (data.repeticoes !== null && lerPreferencia('descansoSozinho')) {
+    iniciarDescanso(item);
+  }
 }
 
 async function salvarAnotacao(item, campo, situacao) {
@@ -307,8 +311,10 @@ function criarCartaoTreino(item) {
   linha.append(nome);
 
   // O RIR do admin e, se o exercício tiver fotos e o botão estiver ligado, o botão de ver a execução.
+  // O botão do timer aparece quando o admin definiu um tempo de descanso.
   const temFotos = fotosDaDemonstracao(item.exercicio).length > 0 && lerPreferencia('mostrarExecucao');
-  if (item.rir !== null || temFotos) {
+  const temDescanso = Boolean(item.descanso);
+  if (item.rir !== null || temFotos || temDescanso) {
     const detalhes = document.createElement('div');
     detalhes.className = 'exercicio-linha';
     if (item.rir !== null) {
@@ -317,9 +323,15 @@ function criarCartaoTreino(item) {
       rir.textContent = `RIR → ${item.rir}`;
       detalhes.append(rir);
     }
-    if (temFotos) {
-      detalhes.append(criarBotaoDemonstracao(item.exercicio));
+    const botoes = document.createElement('div');
+    botoes.className = 'exercicio-botoes';
+    if (temDescanso) {
+      botoes.append(criarBotaoDescanso(item));
     }
+    if (temFotos) {
+      botoes.append(criarBotaoDemonstracao(item.exercicio));
+    }
+    detalhes.append(botoes);
     linha.append(detalhes);
   }
 

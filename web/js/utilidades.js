@@ -114,6 +114,29 @@ function formatarCarga(registro) {
   return partes.join(' × ');
 }
 
+// Segundos para "1:30". Vazio fica vazio.
+function formatarTempo(segundos) {
+  if (segundos === null || segundos === undefined) {
+    return '';
+  }
+  const minutos = Math.floor(segundos / 60);
+  return `${minutos}:${String(segundos % 60).padStart(2, '0')}`;
+}
+
+// Aceita "90" (segundos) ou "1:30" (minutos e segundos). Devolve null se vazio e undefined se inválido.
+function lerTempo(texto) {
+  const limpo = texto.trim();
+  if (limpo === '') {
+    return null;
+  }
+  const partes = limpo.match(/^(?:(\d{1,2}):([0-5]\d)|(\d{1,3}))$/);
+  if (!partes) {
+    return undefined;
+  }
+  const segundos = partes[3] !== undefined ? Number(partes[3]) : Number(partes[1]) * 60 + Number(partes[2]);
+  return segundos <= 900 ? segundos : undefined;
+}
+
 function temValores(serie) {
   return serie.carga !== null || serie.repeticoes !== null;
 }

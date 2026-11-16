@@ -221,6 +221,7 @@
         <label class="config-opcao"><input type="checkbox" id="config-anterior"> <span>Mostrar a semana passada nos campos</span></label>
         <label class="config-opcao"><input type="checkbox" id="config-execucao"> <span>Mostrar o botão de execução</span></label>
         <label class="config-opcao"><input type="checkbox" id="config-confirmar"> <span>Pedir confirmação ao concluir a semana</span></label>
+        <label class="config-opcao"><input type="checkbox" id="config-descanso"> <span>Começar o descanso sozinho ao anotar as reps</span></label>
       </div>
 
       <div id="config-admin" class="config-grupo" hidden>
@@ -249,12 +250,25 @@
       <div class="config-grupo">
         <h3 class="subtitulo">Sobre</h3>
         <dl class="config-sobre">
-          <dt>Versão</dt><dd>0.6.0</dd>
+          <dt>Versão</dt><dd>0.6.1</dd>
           <dt>Fotos de execução</dt><dd>Free Exercise DB, domínio público</dd>
           <dt>Código</dt><dd><a href="https://github.com/Sunshine22515/plano-treino" target="_blank" rel="noopener">github.com/Sunshine22515/plano-treino</a></dd>
         </dl>
       </div>
     </section>
+
+    <!-- Timer de descanso entre os sets. Fica preso acima do menu enquanto conta. -->
+    <div id="barra-descanso" class="barra-descanso" role="timer" aria-live="polite" hidden>
+      <div class="descanso-info">
+        <span class="descanso-rotulo">Descanso</span>
+        <span id="descanso-exercicio" class="descanso-exercicio"></span>
+      </div>
+      <strong id="descanso-tempo" class="descanso-tempo"></strong>
+      <div class="descanso-acoes">
+        <button type="button" id="descanso-mais">+15s</button>
+        <button type="button" id="descanso-pular">Fechar</button>
+      </div>
+    </div>
 
     <nav class="menu-inferior" aria-label="Seções do app">
       <button type="button" class="aba" data-aba="treino">
@@ -272,7 +286,7 @@
     </nav>
   </main>
 
-  <footer class="rodape">v0.6.0</footer>
+  <footer class="rodape">v0.6.1</footer>
 
   <!-- Janela com as fotos que mostram a execução do exercício. -->
   <dialog id="janela-demonstracao" class="janela" aria-labelledby="demonstracao-titulo">
@@ -300,6 +314,7 @@
   <script src="js/elementos.js"></script>
   <script src="js/estado.js"></script>
   <script src="js/utilidades.js"></script>
+  <script src="js/descanso.js"></script>
   <script src="js/treino.js"></script>
   <script src="js/perfil.js"></script>
   <script src="js/admin.js"></script>

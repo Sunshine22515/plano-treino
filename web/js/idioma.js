@@ -108,6 +108,12 @@ const INGLES = {
   'Fotos: Free Exercise DB, domínio público.': 'Photos: Free Exercise DB, public domain.',
   'Fechar': 'Close',
   'Seções do app': 'App sections',
+  'Descanso': 'Rest',
+  'Hora do próximo set!': 'Time for the next set!',
+  'Começar o descanso de {tempo} de {exercicio}': 'Start the {tempo} rest for {exercicio}',
+  'Descanso entre os sets de {exercicio}': 'Rest between sets for {exercicio}',
+  'Use o descanso em segundos (90) ou em minutos e segundos (1:30), até 15:00. Também pode ficar vazio.': 'Enter the rest in seconds (90) or minutes and seconds (1:30), up to 15:00. It can also be empty.',
+  'Começar o descanso sozinho ao anotar as reps': 'Start the rest by itself when reps are logged',
   'Treino': 'Workout',
 
   // Perfil

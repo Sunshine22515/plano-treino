@@ -71,6 +71,7 @@ function limparDados() {
   planilhaAlvo = [];
   seriesAlvo = [];
   exerciciosPersonalizados = [];
+  fecharDescanso();
   botaoAbaAdmin.hidden = true;
   nomeUsuario.textContent = '';
   mostrarAba('treino');
