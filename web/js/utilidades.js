@@ -67,11 +67,19 @@ async function mensagemDaFuncao(erro) {
 
 // A lista fixa do app mais os exercícios que o admin cadastrou.
 function todosExercicios() {
-  return [...EXERCICIOS, ...exerciciosPersonalizados.map(({ nome, grupo }) => ({ nome, grupo, personalizado: true }))];
+  return [
+    ...EXERCICIOS,
+    ...exerciciosPersonalizados.map(({ nome, grupo }) => ({ nome, grupo, grupos: [grupo], personalizado: true }))
+  ];
 }
 
 function buscarExercicio(nome) {
-  return todosExercicios().find(exercicio => exercicio.nome === nome) || { nome, grupo: 'Outros' };
+  return todosExercicios().find(exercicio => exercicio.nome === nome) || { nome, grupo: 'Outros', grupos: ['Outros'] };
+}
+
+// Todos os grupos do exercício, o principal primeiro: "Glúteos, Pernas".
+function nomesDosGrupos(exercicio) {
+  return (exercicio.grupos ?? [exercicio.grupo]).map(grupo => t(grupo)).join(', ');
 }
 
 // Quantos exercícios, já no idioma escolhido: "3 exercícios" ou "3 exercises".
@@ -157,7 +165,7 @@ function criarInfo(exercicio) {
   nome.textContent = nomeExercicio(exercicio.nome);
   const grupo = document.createElement('span');
   grupo.className = 'item-grupo';
-  grupo.textContent = t(exercicio.grupo);
+  grupo.textContent = nomesDosGrupos(exercicio);
   info.append(nome, grupo);
   return info;
 }

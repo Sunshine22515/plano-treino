@@ -157,6 +157,39 @@
   text-transform: uppercase;
 }
 
+/* Com nota escrita, o botão fica preenchido, para o aluno saber que tem algo ali. */
+.botao-nota.tem-nota {
+  border-color: var(--acento);
+  background: var(--acento);
+  color: var(--sobre-acento);
+}
+
+.botao-nota.tem-nota:hover:not(:disabled) {
+  background: var(--acento);
+  opacity: 0.88;
+}
+
+/* A nota fica entre o nome e a tabela, num bloco com o mesmo traço da dica. */
+.nota-exercicio {
+  margin-top: 10px;
+  padding-left: 10px;
+  border-left: 3px solid var(--acento);
+}
+
+.nota-exercicio textarea {
+  width: 100%;
+  min-height: 56px;
+  padding: 6px 8px;
+  font-size: 0.9375rem;
+  resize: vertical;
+}
+
+.nota-explicacao {
+  margin-top: 2px;
+  font-size: 0.75rem;
+  color: var(--texto-suave);
+}
+
 .botao-demonstracao svg {
   width: 16px;
   height: 16px;

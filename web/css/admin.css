@@ -48,6 +48,28 @@
   gap: 8px;
 }
 
+.item-nota {
+  display: block;
+  margin-top: 4px;
+  padding-left: 8px;
+  border-left: 3px solid var(--acento);
+  font-size: 0.8125rem;
+  overflow-wrap: anywhere;
+}
+
+/* Setas de ordem: quadradas, do tamanho de um toque. */
+.botao-ordem {
+  width: 44px;
+  padding: 0;
+  border-color: var(--borda);
+  font-family: var(--fonte-numero);
+  font-size: 1.125rem;
+}
+
+.botao-ordem:disabled {
+  opacity: 0.35;
+}
+
 .botao-discreto {
   border-color: var(--borda);
   color: var(--texto-suave);

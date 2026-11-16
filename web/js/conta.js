@@ -19,11 +19,12 @@ function mostrarAba(nome) {
 }
 
 async function carregarDados(idUsuario) {
-  const [dadosPerfil, plano, historico, seriesFeitas] = await Promise.all([
+  const [dadosPerfil, plano, historico, seriesFeitas, notasFeitas] = await Promise.all([
     cliente.rpc('meu_perfil').maybeSingle(),
     cliente.from(TABELA_PLANO).select('*').eq('user_id', idUsuario).order('posicao'),
     cliente.from(TABELA_REGISTROS).select('*').eq('user_id', idUsuario),
-    cliente.from(TABELA_SERIES).select('*').eq('user_id', idUsuario)
+    cliente.from(TABELA_SERIES).select('*').eq('user_id', idUsuario),
+    cliente.from(TABELA_NOTAS).select('*').eq('user_id', idUsuario)
   ]);
 
   // A pessoa pode ter saído enquanto os dados vinham do servidor.
@@ -44,6 +45,11 @@ async function carregarDados(idUsuario) {
   planilha = plano.data;
   registros = historico.data;
   series = seriesFeitas.data;
+  // Se as notas não carregarem, o treino abre do mesmo jeito, só sem elas.
+  notas = notasFeitas.error ? [] : notasFeitas.data;
+  if (notasFeitas.error) {
+    console.error(notasFeitas.error);
+  }
   nomeUsuario.textContent = perfil.usuario;
   botaoAbaAdmin.hidden = perfil.papel !== 'admin';
   mostrarAba('treino');
@@ -70,6 +76,8 @@ function limparDados() {
   alvoId = null;
   planilhaAlvo = [];
   seriesAlvo = [];
+  notas = [];
+  notasAlvo = [];
   exerciciosPersonalizados = [];
   fecharDescanso();
   botaoAbaAdmin.hidden = true;

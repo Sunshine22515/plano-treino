@@ -96,23 +96,101 @@ function desenharPlanilhaAdmin() {
     return quantidade > 0 ? `${dia.nome} (${quantidade})` : dia.nome;
   });
 
-  const doDia = planilhaAlvo.filter(item => item.dia_semana === diaAdmin);
-  adminPlano.replaceChildren(...doDia.map(item => {
+  const doDia = exerciciosDoDiaAdmin();
+  adminPlano.replaceChildren(...doDia.map((item, indice) => {
     const linha = document.createElement('li');
     linha.className = 'item';
+    const nome = { exercicio: nomeExercicio(item.exercicio) };
+
+    // Setas para mudar a ordem em que o aluno vê os exercícios do dia.
+    const subir = document.createElement('button');
+    subir.type = 'button';
+    subir.className = 'botao-ordem';
+    subir.textContent = '↑';
+    subir.dataset.ordem = `${item.id}:subir`;
+    subir.disabled = indice === 0;
+    subir.setAttribute('aria-label', t('Subir {exercicio}', nome));
+    subir.addEventListener('click', () => moverExercicio(item, -1));
+
+    const descer = document.createElement('button');
+    descer.type = 'button';
+    descer.className = 'botao-ordem';
+    descer.textContent = '↓';
+    descer.dataset.ordem = `${item.id}:descer`;
+    descer.disabled = indice === doDia.length - 1;
+    descer.setAttribute('aria-label', t('Descer {exercicio}', nome));
+    descer.addEventListener('click', () => moverExercicio(item, 1));
 
     const remover = document.createElement('button');
     remover.type = 'button';
     remover.textContent = t('Remover');
-    remover.setAttribute('aria-label', t('Remover {exercicio} da planilha', { exercicio: nomeExercicio(item.exercicio) }));
+    remover.setAttribute('aria-label', t('Remover {exercicio} da planilha', nome));
     remover.addEventListener('click', () => alternarExercicio(item.exercicio));
 
-    linha.append(criarInfo(buscarExercicio(item.exercicio)), criarCamposAdmin(item), remover);
+    const acoes = document.createElement('div');
+    acoes.className = 'item-acoes';
+    acoes.append(subir, descer, remover);
+
+    const info = criarInfo(buscarExercicio(item.exercicio));
+    // A nota que o aluno deixou neste exercício, para o admin acompanhar mudanças de técnica.
+    const notaDoAluno = notasAlvo.find(nota => nota.plano_id === item.id)?.texto;
+    if (notaDoAluno) {
+      const nota = document.createElement('span');
+      nota.className = 'item-nota';
+      nota.textContent = t('Nota do aluno: {texto}', { texto: notaDoAluno });
+      info.append(nota);
+    }
+
+    linha.append(info, criarCamposAdmin(item), acoes);
     return linha;
   }));
   adminVazio.hidden = doDia.length > 0 || !alvo;
 
   desenharTabelaProgresso(adminProgresso, adminProgressoVazio, seriesAlvo);
+}
+
+// Os exercícios do dia escolhido, na ordem em que o aluno vê.
+function exerciciosDoDiaAdmin() {
+  return planilhaAlvo
+    .filter(item => item.dia_semana === diaAdmin)
+    .sort((a, b) => a.posicao - b.posicao || a.id - b.id);
+}
+
+// Troca o exercício de lugar com o vizinho (direcao -1 sobe, 1 desce) e salva as posições que mudaram.
+function moverExercicio(item, direcao) {
+  return umaPorVez(async () => {
+    const ordem = exerciciosDoDiaAdmin();
+    const de = ordem.findIndex(outro => outro.id === item.id);
+    const para = de + direcao;
+    if (de < 0 || para < 0 || para >= ordem.length) {
+      return;
+    }
+    [ordem[de], ordem[para]] = [ordem[para], ordem[de]];
+
+    // A posição de cada um vira o lugar dele na lista (0, 1, 2...). Só vai ao banco quem mudou.
+    const mudaram = ordem
+      .map((outro, posicao) => ({ outro, posicao }))
+      .filter(({ outro, posicao }) => outro.posicao !== posicao);
+    const respostas = await Promise.all(mudaram.map(({ outro, posicao }) =>
+      cliente.from(TABELA_PLANO).update({ posicao }).eq('id', outro.id)
+    ));
+    const erro = respostas.find(resposta => resposta.error)?.error;
+    if (erro) {
+      mostrarAviso(mensagemDoErro(erro));
+      // Recarrega do banco, para a tela não mostrar uma ordem que não foi salva.
+      await carregarAlvo(alvoId);
+      return;
+    }
+    mudaram.forEach(({ outro, posicao }) => {
+      outro.posicao = posicao;
+    });
+    mostrarAviso('');
+    desenharPlanilhaAdmin();
+    // O foco continua na seta do exercício que mudou de lugar, para dar vários toques seguidos.
+    const lado = direcao < 0 ? 'subir' : 'descer';
+    const seta = adminPlano.querySelector(`[data-ordem="${item.id}:${lado}"]`);
+    (seta && !seta.disabled ? seta : adminPlano.querySelector(`[data-ordem^="${item.id}:"]:not(:disabled)`))?.focus();
+  });
 }
 
 function estaNoDia(nome) {
@@ -135,7 +213,7 @@ function desenharCatalogo() {
   const termo = normalizar(busca.value);
   // A busca acha o exercício pelo nome em português e também pelo nome em inglês.
   const visiveis = todosExercicios().filter(exercicio =>
-    (grupoAtivo === TODOS || exercicio.grupo === grupoAtivo) &&
+    (grupoAtivo === TODOS || exercicio.grupos.includes(grupoAtivo)) &&
     (normalizar(exercicio.nome).includes(termo) || normalizar(nomeExercicio(exercicio.nome)).includes(termo))
   );
 
@@ -235,9 +313,10 @@ function desenharGrupos() {
 
 async function carregarAlvo(id) {
   alvoId = id;
-  const [plano, historico] = await Promise.all([
+  const [plano, historico, notasDoAluno] = await Promise.all([
     cliente.from(TABELA_PLANO).select('*').eq('user_id', id).order('posicao'),
-    cliente.from(TABELA_SERIES).select('*').eq('user_id', id)
+    cliente.from(TABELA_SERIES).select('*').eq('user_id', id),
+    cliente.from(TABELA_NOTAS).select('*').eq('user_id', id)
   ]);
   // O admin pode ter escolhido outro usuário enquanto os dados vinham do servidor.
   if (alvoId !== id) {
@@ -252,6 +331,8 @@ async function carregarAlvo(id) {
     planilhaAlvo = plano.data;
     seriesAlvo = historico.data;
   }
+  // As notas são só para o admin ler; se não carregarem, a planilha abre do mesmo jeito.
+  notasAlvo = notasDoAluno.error ? [] : notasDoAluno.data;
   desenharPlanilhaAdmin();
   atualizarBotoesCatalogo();
 }

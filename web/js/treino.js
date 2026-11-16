@@ -299,6 +299,80 @@ janelaDemonstracao.addEventListener('click', evento => {
   }
 });
 
+// --- Nota fixa do exercício ---
+// Uma nota do aluno presa àquele exercício da planilha. Não muda de semana; some se o admin tirar o exercício.
+
+function buscarNota(item) {
+  return notas.find(nota => nota.plano_id === item.id)?.texto ?? '';
+}
+
+async function salvarNota(item, campo, botao, situacao) {
+  const texto = campo.value.trim();
+  situacao.textContent = t('Salvando...');
+  // Nota apagada some do banco; nota escrita é criada ou atualizada.
+  const { error } = texto === ''
+    ? await cliente.from(TABELA_NOTAS).delete().eq('plano_id', item.id)
+    : await cliente.from(TABELA_NOTAS).upsert({
+      plano_id: item.id,
+      user_id: usuario.id,
+      texto,
+      atualizado_em: new Date().toISOString()
+    }, { onConflict: 'plano_id' });
+  if (error) {
+    situacao.textContent = '';
+    mostrarAviso(mensagemDoErro(error));
+    return;
+  }
+  notas = notas.filter(nota => nota.plano_id !== item.id);
+  if (texto !== '') {
+    notas.push({ plano_id: item.id, user_id: usuario.id, texto });
+  }
+  campo.value = texto;
+  botao.classList.toggle('tem-nota', texto !== '');
+  mostrarAviso('');
+  mostrarSalvo(situacao);
+}
+
+// O botão abre e fecha a caixa da nota. Se já tem nota, a caixa começa aberta, para o aluno ler antes de treinar.
+function criarNotaDoExercicio(item, situacao) {
+  const texto = buscarNota(item);
+
+  const caixa = document.createElement('div');
+  caixa.className = 'nota-exercicio';
+  caixa.id = `nota-${item.id}`;
+  caixa.hidden = texto === '';
+
+  const campo = document.createElement('textarea');
+  campo.maxLength = 500;
+  campo.rows = 2;
+  campo.value = texto;
+  campo.placeholder = t('Ex.: pegada mais fechada, banco no 3º furo');
+  campo.setAttribute('aria-label', t('Nota de {exercicio}', { exercicio: nomeExercicio(item.exercicio) }));
+  const explicacao = document.createElement('p');
+  explicacao.className = 'nota-explicacao';
+  explicacao.textContent = t('Fica neste exercício em todas as semanas.');
+  caixa.append(campo, explicacao);
+
+  const botao = document.createElement('button');
+  botao.type = 'button';
+  botao.className = 'botao-demonstracao botao-nota';
+  botao.classList.toggle('tem-nota', texto !== '');
+  botao.setAttribute('aria-controls', caixa.id);
+  botao.setAttribute('aria-expanded', String(!caixa.hidden));
+  botao.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v11l-5 5H4zm11 15.2L19.2 15H15zM7 8v2h10V8zm0 4v2h6v-2z" fill="currentColor"/></svg>';
+  botao.append(t('Nota'));
+  botao.addEventListener('click', () => {
+    caixa.hidden = !caixa.hidden;
+    botao.setAttribute('aria-expanded', String(!caixa.hidden));
+    if (!caixa.hidden) {
+      campo.focus();
+    }
+  });
+
+  campo.addEventListener('change', () => salvarNota(item, campo, botao, situacao));
+  return { botao, caixa };
+}
+
 // --- Cartão do exercício ---
 
 function criarCartaoTreino(item) {
@@ -311,33 +385,32 @@ function criarCartaoTreino(item) {
   linha.append(nome);
 
   // O RIR do admin e, se o exercício tiver fotos e o botão estiver ligado, o botão de ver a execução.
-  // O botão do timer aparece quando o admin definiu um tempo de descanso.
-  const temFotos = fotosDaDemonstracao(item.exercicio).length > 0 && lerPreferencia('mostrarExecucao');
-  const temDescanso = Boolean(item.descanso);
-  if (item.rir !== null || temFotos || temDescanso) {
-    const detalhes = document.createElement('div');
-    detalhes.className = 'exercicio-linha';
-    if (item.rir !== null) {
-      const rir = document.createElement('p');
-      rir.className = 'exercicio-rir';
-      rir.textContent = `RIR → ${item.rir}`;
-      detalhes.append(rir);
-    }
-    const botoes = document.createElement('div');
-    botoes.className = 'exercicio-botoes';
-    if (temDescanso) {
-      botoes.append(criarBotaoDescanso(item));
-    }
-    if (temFotos) {
-      botoes.append(criarBotaoDemonstracao(item.exercicio));
-    }
-    detalhes.append(botoes);
-    linha.append(detalhes);
-  }
-
   const situacao = document.createElement('p');
   situacao.className = 'salvo';
   situacao.setAttribute('role', 'status');
+
+  // Linha do RIR com os botões do exercício: nota, timer (se o admin definiu descanso) e execução (se tem fotos).
+  const temFotos = fotosDaDemonstracao(item.exercicio).length > 0 && lerPreferencia('mostrarExecucao');
+  const nota = criarNotaDoExercicio(item, situacao);
+  const detalhes = document.createElement('div');
+  detalhes.className = 'exercicio-linha';
+  if (item.rir !== null) {
+    const rir = document.createElement('p');
+    rir.className = 'exercicio-rir';
+    rir.textContent = `RIR → ${item.rir}`;
+    detalhes.append(rir);
+  }
+  const botoes = document.createElement('div');
+  botoes.className = 'exercicio-botoes';
+  botoes.append(nota.botao);
+  if (item.descanso) {
+    botoes.append(criarBotaoDescanso(item));
+  }
+  if (temFotos) {
+    botoes.append(criarBotaoDemonstracao(item.exercicio));
+  }
+  detalhes.append(botoes);
+  linha.append(detalhes, nota.caixa);
 
   const anteriores = buscarSeriesAnteriores(item);
   linha.append(criarTabelaSeries(item, anteriores, situacao));

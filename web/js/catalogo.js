@@ -44,6 +44,41 @@ const CATALOGO = {
   ]
 };
 
+// Exercícios que também trabalham outros grupos. Eles aparecem no filtro de cada um desses grupos.
+// O grupo de cima (CATALOGO) continua sendo o principal; estes são os secundários.
+const GRUPOS_EXTRAS = {
+  // Pernas e glúteos andam juntos
+  'Agachamento livre': ['Glúteos'],
+  'Agachamento búlgaro': ['Glúteos'],
+  'Afundo': ['Glúteos'],
+  'Passada': ['Glúteos'],
+  'Leg press': ['Glúteos'],
+  'Stiff': ['Pernas'],
+  'Levantamento terra romeno': ['Pernas'],
+  'Agachamento sumô': ['Pernas'],
+  'Subida no banco': ['Pernas'],
+  'Elevação pélvica': ['Pernas'],
+  'Cadeira abdutora': ['Pernas'],
+  // Costas, lombar e posterior
+  'Levantamento terra': ['Pernas', 'Glúteos'],
+  'Hiperextensão lombar': ['Glúteos'],
+  'Barra fixa': ['Bíceps'],
+  'Puxada supinada': ['Bíceps'],
+  // Ombros e parte de cima das costas
+  'Remada alta': ['Costas'],
+  'Encolhimento': ['Costas'],
+  'Face pull': ['Costas'],
+  'Crucifixo inverso': ['Costas'],
+  // Peito e tríceps
+  'Flexão de braço': ['Tríceps'],
+  'Mergulho nas paralelas': ['Tríceps'],
+  'Supino fechado': ['Peito'],
+  // Braço e antebraço
+  'Rosca martelo': ['Antebraço'],
+  'Rosca inversa': ['Bíceps'],
+  'Caminhada do fazendeiro': ['Costas']
+};
+
 const EXERCICIOS = Object.entries(CATALOGO).flatMap(([grupo, nomes]) =>
-  nomes.map(nome => ({ nome, grupo }))
+  nomes.map(nome => ({ nome, grupo, grupos: [grupo, ...(GRUPOS_EXTRAS[nome] ?? [])] }))
 );

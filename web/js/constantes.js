@@ -4,6 +4,7 @@ const TABELA_PLANO = 'plano_exercicios';
 const TABELA_REGISTROS = 'registros_treino';
 const TABELA_SERIES = 'registros_series';
 const TABELA_PERSONALIZADOS = 'exercicios_personalizados';
+const TABELA_NOTAS = 'notas_exercicio';
 const SERIES_PADRAO = 3;
 const REPETICOES_PADRAO = '8-12';
 const TODOS = 'Todos';
