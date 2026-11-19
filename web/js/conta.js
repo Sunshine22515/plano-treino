@@ -78,6 +78,7 @@ function limparDados() {
   seriesAlvo = [];
   notas = [];
   notasAlvo = [];
+  diaAtivo = null;
   exerciciosPersonalizados = [];
   fecharDescanso();
   botaoAbaAdmin.hidden = true;

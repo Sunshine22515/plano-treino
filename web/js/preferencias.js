@@ -3,9 +3,7 @@
 const PREFERENCIAS_PADRAO = {
   mostrarAnterior: true,
   mostrarExecucao: true,
-  confirmarSemana: true,
-  descansoSozinho: true,
-  seriesPadrao: SERIES_PADRAO,
+  confirmarSemana: true,  seriesPadrao: SERIES_PADRAO,
   repeticoesPadrao: REPETICOES_PADRAO
 };
 

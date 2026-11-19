@@ -5,9 +5,7 @@ function preencherConfiguracoes() {
   configIdioma.value = IDIOMA;
   configAnterior.checked = lerPreferencia('mostrarAnterior');
   configExecucao.checked = lerPreferencia('mostrarExecucao');
-  configConfirmar.checked = lerPreferencia('confirmarSemana');
-  configDescansoSozinho.checked = lerPreferencia('descansoSozinho');
-  configAdmin.hidden = perfil?.papel !== 'admin';
+  configConfirmar.checked = lerPreferencia('confirmarSemana');  configAdmin.hidden = perfil?.papel !== 'admin';
   configSeries.value = String(lerPreferencia('seriesPadrao'));
   configReps.value = lerPreferencia('repeticoesPadrao');
 }
@@ -41,8 +39,7 @@ configIdioma.addEventListener('change', () => {
 [
   [configAnterior, 'mostrarAnterior'],
   [configExecucao, 'mostrarExecucao'],
-  [configConfirmar, 'confirmarSemana'],
-  [configDescansoSozinho, 'descansoSozinho']
+  [configConfirmar, 'confirmarSemana']
 ].forEach(([caixa, chave]) => {
   caixa.addEventListener('change', () => {
     salvarPreferencia(chave, caixa.checked);

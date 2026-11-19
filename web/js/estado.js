@@ -9,7 +9,8 @@ let series = [];
 let notas = [];
 let notasAlvo = [];
 let abaAtiva = 'treino';
-let diaAtivo = new Date().getDay();
+// Nenhum dia aberto ao entrar: o aluno escolhe o dia na lista.
+let diaAtivo = null;
 let usuariosAdmin = [];
 let alvoId = null;
 let planilhaAlvo = [];

@@ -1,59 +1,158 @@
-/* Aba Treino: barras da semana, exercícios numerados, tabela de séries e janela de execução. */
+/* Aba Treino: a semana, a lista de dias, os exercícios do dia e a tabela de sets.
+   A energia fica no topo (o bloco preto da semana) e nos nomes; o resto fica limpo para anotar rápido. */
 
-/* Barras da semana */
-
-.barras {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
+/* Topo da semana: um bloco preto, como o placar da academia, com "Semana 3", o andamento e uma bolinha por dia. */
+.semana-topo {
+  margin-bottom: 16px;
+  padding: 20px 20px 18px;
+  border-radius: var(--raio);
+  background: var(--bloco-forte);
+  color: var(--sobre-bloco-forte);
 }
 
-.barra {
+.semana-topo .titulo-pagina {
+  margin-bottom: 6px;
+  font-size: 3.25rem;
+}
+
+.semana-andamento {
+  font-weight: 500;
+  color: var(--sobre-bloco-suave);
+}
+
+.pontos-semana {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.ponto {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--sobre-bloco-forte);
+  border-radius: 50%;
+}
+
+.ponto.cheio {
+  background: var(--sobre-bloco-forte);
+}
+
+/* Lista de dias: dia de treino é um cartão forte que se toca; dia de descanso é só texto apagado. */
+.lista-dias {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dia-botao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 72px;
+  padding: 10px 16px 10px 18px;
+  border: 2px solid var(--texto);
+  background: var(--superficie);
+  text-align: left;
+  font-weight: 400;
+}
+
+.dia-nome {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: none;
-}
-
-.barra:hover:not(:disabled) {
-  background: none;
-}
-
-.barra-trilho {
-  display: flex;
-  align-items: flex-end;
-  width: 100%;
-  height: 72px;
-  background: var(--barra-trilho);
-}
-
-.barra-valor {
-  width: 100%;
-  background: var(--barra-valor);
-}
-
-.barra[aria-pressed="true"] .barra-valor {
-  background: var(--acento);
-}
-
-.barra-dia {
   font-family: var(--fonte-titulo);
-  font-size: 0.875rem;
-  text-transform: uppercase;
+  font-size: 1.875rem;
+  font-weight: 800;
+  font-style: italic;
+  line-height: 1;
+  letter-spacing: -0.01em;
 }
 
-.barra[aria-pressed="true"] .barra-dia {
-  color: var(--acento);
+.dia-quantos {
+  margin-top: 3px;
+  font-family: var(--fonte-texto);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-style: normal;
+  letter-spacing: 0;
+  color: var(--texto-suave);
+}
+
+.dia-detalhe {
+  flex: none;
+  font-family: var(--fonte-titulo);
+  font-size: 1.375rem;
+  font-weight: 800;
+  font-style: italic;
+}
+
+/* Dia feito: o cartão fica preto (branco no escuro), com o visto. */
+.dia-botao.completo {
+  border-color: var(--acento);
+  background: var(--acento);
+  color: var(--sobre-acento);
+}
+
+.dia-botao.completo:hover:not(:disabled) {
+  background: var(--acento);
+  opacity: 0.9;
+}
+
+.dia-botao.completo .dia-quantos {
+  color: var(--sobre-acento);
+  opacity: 0.75;
+}
+
+.dia-botao.completo .dia-detalhe {
+  font-size: 1.75rem;
+}
+
+.dia-descanso {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 20px;
+  color: var(--texto-suave);
+}
+
+.dia-descanso .dia-nome {
+  font-size: 1.25rem;
   font-weight: 700;
 }
 
-.barra:disabled .barra-dia {
+.dia-descanso .dia-detalhe {
+  font-family: var(--fonte-texto);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-style: normal;
+}
+.botao-voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  margin-left: -8px;
+  padding: 0 12px 0 4px;
+  border-color: transparent;
   color: var(--texto-suave);
+  font-weight: 600;
+}
+
+.botao-voltar svg {
+  width: 20px;
+  height: 20px;
+}
+
+#dia-aberto .secao-topo {
+  margin: 4px 0 8px;
+}
+
+#titulo-dia {
+  font-size: 2rem;
 }
 
 /* Listas */
@@ -71,17 +170,22 @@
   justify-content: space-between;
   gap: 8px 12px;
   padding: 12px 0;
-  border-top: 1.5px solid var(--borda);
+  border-top: 1px solid var(--linha);
 }
 
-/* Cada exercício é uma entrada do caderno, numerada 01, 02, 03... */
+/* Cada exercício é uma entrada do caderno: "1. Supino reto", "2. Crucifixo"... */
 .lista-cartoes {
   counter-reset: exercicio;
 }
 
 .lista-cartoes .item {
-  padding: 18px 0 8px;
-  border-top: 2px solid var(--texto);
+  padding: 24px 0 8px;
+  border-top: 1px solid var(--borda);
+}
+
+.lista-cartoes .item:first-child {
+  border-top: 0;
+  padding-top: 12px;
 }
 
 .item-coluna {
@@ -104,35 +208,31 @@
 }
 
 .exercicio-nome {
-  font-size: 1.5rem;
+  font-size: 2rem;
   line-height: 1.1;
   overflow-wrap: anywhere;
 }
 
 .exercicio-nome::before {
   counter-increment: exercicio;
-  content: counter(exercicio, decimal-leading-zero);
-  margin-right: 8px;
-  font-family: var(--fonte-numero);
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--acento);
-  vertical-align: 0.15em;
+  content: counter(exercicio) ".";
+  margin-right: 6px;
+  color: var(--texto-suave);
 }
 
-/* Linha do RIR, com o botão de ver a execução à direita. */
+/* Linha do RIR, com os botões do exercício à direita. */
 .exercicio-linha {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  min-height: 24px;
-  margin-top: 6px;
+  gap: 8px 12px;
+  margin-top: 8px;
 }
 
 .exercicio-rir {
-  font-family: var(--fonte-numero);
   font-size: 0.9375rem;
+  font-weight: 500;
   color: var(--texto-suave);
 }
 
@@ -147,14 +247,18 @@
   display: inline-flex;
   flex: none;
   align-items: center;
-  gap: 4px;
-  min-height: 32px;
-  padding: 0 10px 0 6px;
-  border-color: var(--borda);
-  font-family: var(--fonte-titulo);
+  gap: 5px;
+  min-height: 36px;
+  padding: 0 12px 0 9px;
+  border: 1px solid var(--borda);
+  border-radius: 999px;
   font-size: 0.875rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.botao-demonstracao svg {
+  width: 16px;
+  height: 16px;
 }
 
 /* Com nota escrita, o botão fica preenchido, para o aluno saber que tem algo ali. */
@@ -166,55 +270,48 @@
 
 .botao-nota.tem-nota:hover:not(:disabled) {
   background: var(--acento);
-  opacity: 0.88;
+  opacity: 0.9;
 }
 
-/* A nota fica entre o nome e a tabela, num bloco com o mesmo traço da dica. */
+/* A nota fica entre o nome e a tabela, como um bilhete colado na página. */
 .nota-exercicio {
-  margin-top: 10px;
-  padding-left: 10px;
-  border-left: 3px solid var(--acento);
+  margin-top: 12px;
 }
 
 .nota-exercicio textarea {
   width: 100%;
   min-height: 56px;
-  padding: 6px 8px;
+  padding: 10px 12px;
+  border-color: var(--borda);
+  background: var(--superficie-clara);
   font-size: 0.9375rem;
   resize: vertical;
 }
 
 .nota-explicacao {
-  margin-top: 2px;
+  margin-top: 4px;
   font-size: 0.75rem;
   color: var(--texto-suave);
 }
 
-.botao-demonstracao svg {
-  width: 16px;
-  height: 16px;
-}
-
-/* Tabela de séries: linhas de caderno, sem caixas em volta dos números. */
+/* Tabela de sets: linhas de caderno, sem caixas em volta dos números. */
 .tabela-series {
   width: 100%;
-  margin-top: 8px;
+  margin-top: 12px;
   border-collapse: collapse;
   table-layout: fixed;
 }
 
 .tabela-series th {
   padding: 6px 0;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.8125rem;
+  font-weight: 500;
   text-align: left;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
   color: var(--texto-suave);
 }
 
 .tabela-series thead th:first-child {
-  width: 44px;
+  width: 40px;
 }
 
 .tabela-series tbody tr {
@@ -222,26 +319,27 @@
 }
 
 .tabela-series tbody th {
-  font-family: var(--fonte-numero);
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--texto);
+  font-family: var(--fonte-titulo);
+  font-size: 1.25rem;
+  font-weight: 800;
+  font-style: italic;
+  color: var(--texto-suave);
 }
 
 .tabela-series td {
-  padding: 2px 12px 2px 0;
+  padding: 2px 16px 2px 0;
 }
 
 .tabela-series input {
   width: 100%;
-  min-height: 44px;
+  min-height: 46px;
   padding: 0;
   border: 0;
   border-bottom: 1.5px solid var(--borda);
   border-radius: 0;
   background: transparent;
-  font-family: var(--fonte-numero);
-  font-size: 1.125rem;
+  font-size: 1.5rem;
+  font-weight: 700;
 }
 
 .tabela-series input:focus-visible {
@@ -250,6 +348,7 @@
 }
 
 .tabela-series input::placeholder {
+  font-weight: 400;
   color: var(--dica-campo);
 }
 
@@ -262,10 +361,8 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-size: 0.8125rem;
+  font-weight: 500;
   color: var(--texto-suave);
 }
 
@@ -273,36 +370,15 @@
   width: 72px;
   min-height: 44px;
   padding: 0 8px;
-  font-family: var(--fonte-numero);
   font-size: 1rem;
+  font-weight: 600;
   text-align: center;
 }
 
-.campo-texto {
-  width: 100%;
-  margin-top: 14px;
-}
-
-/* Anotações com pauta, como uma folha de caderno. */
-.campo textarea {
-  width: 100%;
-  min-height: 84px;
-  padding: 0 2px;
-  border: 0;
-  border-radius: 0;
-  background: repeating-linear-gradient(transparent 0 27px, var(--linha) 27px 28px);
-  font-size: 1rem;
-  line-height: 28px;
-  text-transform: none;
-  letter-spacing: normal;
-  resize: vertical;
-}
-
+/* A semana passada, logo embaixo dos sets: o que bater hoje. */
 .dica {
   width: 100%;
   margin-top: 12px;
-  padding-left: 10px;
-  border-left: 3px solid var(--acento);
   font-size: 0.875rem;
   color: var(--texto-suave);
 }
@@ -316,12 +392,10 @@
 
 .largura-total {
   width: 100%;
-  min-height: 52px;
-  margin-top: 12px;
-  font-family: var(--fonte-titulo);
-  font-size: 1.125rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  min-height: 58px;
+  margin-top: 16px;
+  font-size: 1.0625rem;
+  font-weight: 700;
 }
 
 .total,
@@ -336,7 +410,6 @@
 .vazio {
   margin: 16px 0;
 }
-
 /* Timer de descanso: faixa invertida (preta no claro, branca no escuro) presa logo acima do menu. */
 .barra-descanso {
   position: fixed;
@@ -362,8 +435,6 @@
 .descanso-rotulo {
   font-family: var(--fonte-titulo);
   font-size: 0.875rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
   opacity: 0.7;
 }
 
@@ -384,7 +455,6 @@
 .terminou .descanso-tempo {
   font-family: var(--fonte-titulo);
   font-size: 1.125rem;
-  text-transform: uppercase;
 }
 
 .descanso-acoes {
@@ -419,8 +489,7 @@ body.com-descanso {
 .janela {
   width: min(420px, calc(100% - 32px));
   padding: 0;
-  border: 1.5px solid var(--borda);
-  border-top: 3px solid var(--acento);
+  border: 1px solid var(--borda);
   border-radius: var(--raio);
   background: var(--superficie);
   color: var(--texto);
@@ -464,7 +533,7 @@ body.com-descanso {
   justify-content: center;
   aspect-ratio: 4 / 3;
   margin: 0 16px;
-  border: 1.5px solid var(--borda);
+  border: 1px solid var(--borda);
   border-radius: var(--raio);
   background: #ffffff;
   overflow: hidden;

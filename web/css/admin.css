@@ -79,7 +79,7 @@
 .novo-exercicio {
   margin-top: 24px;
   padding-top: 4px;
-  border-top: 2px solid var(--texto);
+  border-top: 1px solid var(--borda);
 }
 
 .novo-exercicio .total {

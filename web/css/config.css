@@ -8,7 +8,7 @@
 .config-grupo {
   margin-bottom: 8px;
   padding-top: 4px;
-  border-top: 2px solid var(--texto);
+  border-top: 1px solid var(--borda);
 }
 
 .config-grupo .subtitulo {

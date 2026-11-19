@@ -1,4 +1,6 @@
-/* Cores, fontes e estilos básicos de botões e campos. Branco, prata e preto, com blocos em formato de caderno. */
+/* Cores, fontes e estilos básicos de botões e campos. Branco, prata e preto, com energia de academia.
+   Uma família só (Barlow). Títulos e números grandes em condensada pesada e inclinada, como placar de academia;
+   o texto corrido fica na Barlow normal. Maiúsculas só no logo. */
 
 :root {
   --fundo: #f1f2f4;
@@ -17,8 +19,12 @@
   --barra-valor: rgb(0 0 0 / 38%);
   --fonte-texto: Barlow, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --fonte-titulo: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
-  --fonte-numero: "IBM Plex Mono", ui-monospace, Consolas, monospace;
-  --raio: 6px;
+  --fonte-numero: var(--fonte-texto);
+  --raio: 8px;
+  /* O bloco forte: preto no claro e grafite no escuro (para não acender a tela à noite). */
+  --bloco-forte: #0c0c0e;
+  --sobre-bloco-forte: #ffffff;
+  --sobre-bloco-suave: #a3a7ae;
   color-scheme: light;
 }
 
@@ -38,6 +44,9 @@
   --dica-campo: #8a8e96;
   --barra-trilho: rgb(255 255 255 / 8%);
   --barra-valor: rgb(255 255 255 / 38%);
+  --bloco-forte: #23262b;
+  --sobre-bloco-forte: #f2f3f5;
+  --sobre-bloco-suave: #9a9ea6;
   color-scheme: dark;
 }
 
@@ -52,12 +61,13 @@
 body {
   margin: 0;
   min-height: 100vh;
-  padding: 24px 16px 96px;
+  padding: 24px 16px 120px;
   background: var(--fundo);
   color: var(--texto);
   font-family: var(--fonte-texto);
   font-size: 1rem;
   line-height: 1.45;
+  font-variant-numeric: tabular-nums;
 }
 
 h1,
@@ -71,14 +81,14 @@ h1,
 h2,
 h3 {
   font-family: var(--fonte-titulo);
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
+  font-weight: 800;
+  font-style: italic;
+  line-height: 1;
+  letter-spacing: -0.01em;
 }
 
 h2 {
-  font-size: 1.375rem;
-  line-height: 1.15;
+  font-size: 1.75rem;
 }
 
 button {
@@ -89,7 +99,7 @@ button {
   background: transparent;
   color: var(--texto);
   font: inherit;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
 }
 

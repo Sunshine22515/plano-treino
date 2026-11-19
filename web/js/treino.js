@@ -25,36 +25,14 @@ function buscarSerieAtual(item, numero) {
   ) ?? null;
 }
 
-function buscarAnotacaoAtual(item) {
-  return registros.find(registro =>
-    registro.semana === perfil.semana_atual &&
-    registro.dia_semana === item.dia_semana &&
-    registro.exercicio === item.exercicio
-  )?.anotacao ?? '';
-}
-
-// A anotação mais recente de uma semana anterior vira o lembrete.
-function buscarLembrete(exercicio) {
-  return registros
-    .filter(registro => registro.exercicio === exercicio && registro.semana < perfil.semana_atual && registro.anotacao)
-    .sort((a, b) => b.semana - a.semana)[0]?.anotacao ?? null;
-}
-
-function criarDica(anteriores, lembrete) {
-  const textos = [];
-  // Nas Configurações, a pessoa pode esconder os números da semana passada. O lembrete continua.
-  if (anteriores.length > 0 && lerPreferencia('mostrarAnterior')) {
-    textos.push(`${t('Semana {n}', { n: anteriores[0].semana })}: ${anteriores.map(formatarCarga).join(' · ')}`);
-  }
-  if (lembrete) {
-    textos.push(`${t('Lembrete')}: ${lembrete}`);
-  }
-  if (textos.length === 0) {
+// Cargas e reps da semana passada, numa linha embaixo da tabela. Pode ser escondida nas Configurações.
+function criarDica(anteriores) {
+  if (anteriores.length === 0 || !lerPreferencia('mostrarAnterior')) {
     return null;
   }
   const dica = document.createElement('p');
   dica.className = 'dica';
-  dica.textContent = textos.join(' — ');
+  dica.textContent = `${t('Semana {n}', { n: anteriores[0].semana })}: ${anteriores.map(formatarCarga).join(', ')}`;
   return dica;
 }
 
@@ -110,37 +88,19 @@ async function salvarSerie(item, numero, campos, situacao) {
   mostrarSalvo(situacao);
   atualizarResumo();
   desenharProgresso();
-  // Anotar as reps quer dizer que o set acabou: o descanso começa sozinho, se a pessoa não desligou isso.
-  if (data.repeticoes !== null && lerPreferencia('descansoSozinho')) {
-    iniciarDescanso(item);
-  }
+  // O timer de descanso não começa sozinho: só quando o aluno toca no botão do tempo.
 }
 
-async function salvarAnotacao(item, campo, situacao) {
-  situacao.textContent = t('Salvando...');
-  const { data, error } = await cliente
-    .from(TABELA_REGISTROS)
-    .upsert({
-      user_id: usuario.id,
-      semana: perfil.semana_atual,
-      dia_semana: item.dia_semana,
-      exercicio: item.exercicio,
-      anotacao: campo.value.trim() || null,
-      atualizado_em: new Date().toISOString()
-    }, { onConflict: 'user_id,semana,dia_semana,exercicio' })
-    .select()
-    .single();
-  if (error) {
-    situacao.textContent = '';
-    mostrarAviso(mensagemDoErro(error));
-    return;
-  }
-  registros = [...registros.filter(registro => registro.id !== data.id), data];
-  mostrarSalvo(situacao);
+// --- Dias da semana ---
+
+// Os dias que têm treino na planilha, na ordem da semana (segunda primeiro).
+function diasComTreino() {
+  return DIAS.filter(dia => planilha.some(item => item.dia_semana === dia.numero));
 }
 
-function atualizarResumo() {
-  const doDia = planilha.filter(item => item.dia_semana === diaAtivo);
+// Quantos exercícios do dia já têm carga ou reps anotadas nesta semana.
+function exerciciosFeitos(numeroDoDia) {
+  const doDia = planilha.filter(item => item.dia_semana === numeroDoDia);
   const feitos = doDia.filter(item =>
     series.some(serie =>
       serie.semana === perfil?.semana_atual &&
@@ -149,41 +109,87 @@ function atualizarResumo() {
       temValores(serie)
     )
   );
-  resumoSemana.textContent = String(perfil?.semana_atual ?? 1);
-  resumoExercicios.textContent = String(doDia.length);
-  resumoFeitos.textContent = `${feitos.length}/${doDia.length}`;
+  return { feitos: feitos.length, total: doDia.length };
 }
 
-function desenharBarrasDias() {
-  const contagem = dia => planilha.filter(item => item.dia_semana === dia.numero).length;
-  const maior = Math.max(1, ...DIAS.map(contagem));
-  diasTreino.replaceChildren(...DIAS.map(dia => {
-    const quantidade = contagem(dia);
-    const botao = document.createElement('button');
-    botao.type = 'button';
-    botao.className = 'barra';
-    botao.disabled = quantidade === 0;
-    botao.setAttribute('aria-pressed', String(dia.numero === diaAtivo));
-    botao.setAttribute('aria-label', `${dia.completo}: ${quantosExercicios(quantidade)}`);
-    botao.addEventListener('click', () => {
-      diaAtivo = dia.numero;
-      desenharTreino();
-    });
-
-    const preenchimento = document.createElement('span');
-    preenchimento.className = 'barra-valor';
-    preenchimento.style.height = `${quantidade === 0 ? 6 : 20 + (quantidade / maior) * 80}%`;
-    const rotulo = document.createElement('span');
-    rotulo.className = 'barra-dia';
-    rotulo.textContent = dia.nome;
-
-    const trilho = document.createElement('span');
-    trilho.className = 'barra-trilho';
-    trilho.append(preenchimento);
-    botao.append(trilho, rotulo);
-    return botao;
+// Embaixo do "Semana 3": uma frase ("2 de 4 dias feitos") e uma bolinha por dia de treino, cheia quando o dia acabou.
+function atualizarResumo() {
+  const dias = diasComTreino();
+  const completos = dias.map(dia => {
+    const { feitos, total } = exerciciosFeitos(dia.numero);
+    return feitos === total;
+  });
+  const quantos = completos.filter(Boolean).length;
+  resumoFeitos.textContent = quantos === dias.length && dias.length > 0
+    ? t('Todos os dias feitos. Pode concluir a semana.')
+    : t('{feitos} de {total} dias feitos', { feitos: quantos, total: dias.length });
+  pontosSemana.replaceChildren(...completos.map(completo => {
+    const ponto = document.createElement('span');
+    ponto.className = completo ? 'ponto cheio' : 'ponto';
+    return ponto;
   }));
 }
+
+// Os 7 dias da semana. Dia de treino é um botão forte que abre o treino; dia sem treino é uma linha apagada.
+function desenharListaDias() {
+  diasTreino.replaceChildren(...DIAS.map(dia => {
+    const { feitos, total } = exerciciosFeitos(dia.numero);
+    const linha = document.createElement('li');
+
+    if (total === 0) {
+      const descanso = document.createElement('div');
+      descanso.className = 'dia-descanso';
+      const nome = document.createElement('span');
+      nome.className = 'dia-nome';
+      nome.textContent = dia.completo;
+      const detalhe = document.createElement('span');
+      detalhe.className = 'dia-detalhe';
+      detalhe.textContent = t('descanso');
+      descanso.append(nome, detalhe);
+      linha.append(descanso);
+      return linha;
+    }
+
+    const completo = feitos === total;
+    const botao = document.createElement('button');
+    botao.type = 'button';
+    botao.className = 'dia-botao';
+    botao.classList.toggle('completo', completo);
+    botao.setAttribute('aria-label', `${dia.completo}: ${quantosExercicios(total)}, ${feitos}/${total}`);
+    botao.addEventListener('click', () => abrirDia(dia.numero));
+
+    const nome = document.createElement('span');
+    nome.className = 'dia-nome';
+    nome.textContent = dia.completo;
+    const detalhe = document.createElement('span');
+    detalhe.className = 'dia-detalhe';
+    // Feito: um visto. Em andamento: "1 de 3", e o número de exercícios embaixo do nome.
+    detalhe.textContent = completo ? '✓' : t('{feitos} de {total}', { feitos, total });
+    const quantos = document.createElement('span');
+    quantos.className = 'dia-quantos';
+    quantos.textContent = quantosExercicios(total);
+    nome.append(quantos);
+    botao.append(nome, detalhe);
+    linha.append(botao);
+    return linha;
+  }));
+}
+
+function abrirDia(numero) {
+  diaAtivo = numero;
+  desenharTreino();
+  window.scrollTo(0, 0);
+}
+
+botaoVoltarDias.addEventListener('click', () => {
+  const dia = diaAtivo;
+  diaAtivo = null;
+  desenharTreino();
+  window.scrollTo(0, 0);
+  // O foco volta para o dia que estava aberto, para quem navega pelo teclado.
+  const nome = DIAS.find(item => item.numero === dia)?.completo;
+  [...diasTreino.querySelectorAll('.dia-botao')].find(botao => botao.querySelector('.dia-nome').textContent === nome)?.focus();
+});
 
 // Uma linha por série. O número de linhas vem das séries definidas pelo admin.
 function criarTabelaSeries(item, anteriores, situacao) {
@@ -415,48 +421,43 @@ function criarCartaoTreino(item) {
   const anteriores = buscarSeriesAnteriores(item);
   linha.append(criarTabelaSeries(item, anteriores, situacao));
 
-  const dica = criarDica(anteriores, buscarLembrete(item.exercicio));
+  // As anotações por semana saíram: o que o aluno quer lembrar vai na Nota, que fica no exercício.
+  const dica = criarDica(anteriores);
   if (dica) {
     linha.append(dica);
   }
-
-  const anotacao = document.createElement('textarea');
-  anotacao.maxLength = 500;
-  anotacao.value = buscarAnotacaoAtual(item);
-  anotacao.setAttribute('aria-label', t('Anotações de {exercicio}', { exercicio: nomeExercicio(item.exercicio) }));
-  anotacao.addEventListener('change', () => salvarAnotacao(item, anotacao, situacao));
-
-  const campoAnotacao = criarCampo(t('Anotações'), anotacao);
-  campoAnotacao.classList.add('campo-texto');
-  linha.append(campoAnotacao, situacao);
+  linha.append(situacao);
   return linha;
 }
 
+// Duas telas: a lista de dias (nenhum dia aberto) ou o treino completo do dia escolhido.
 function desenharTreino() {
   tituloSemana.textContent = t('Semana {n}', { n: perfil?.semana_atual ?? 1 });
 
-  const diasComTreino = DIAS.filter(dia => planilha.some(item => item.dia_semana === dia.numero));
-  // Se hoje não for dia de treino, abre no primeiro dia que tiver.
-  if (diasComTreino.length > 0 && !diasComTreino.some(dia => dia.numero === diaAtivo)) {
-    diaAtivo = diasComTreino[0].numero;
+  const dias = diasComTreino();
+  // Se o dia aberto saiu da planilha, volta para a lista.
+  if (!dias.some(dia => dia.numero === diaAtivo)) {
+    diaAtivo = null;
   }
+  const comDiaAberto = diaAtivo !== null;
 
-  desenharBarrasDias();
-  semanaCartao.hidden = diasComTreino.length === 0;
-
-  const doDia = planilha.filter(item => item.dia_semana === diaAtivo);
-  treino.replaceChildren(...doDia.map(criarCartaoTreino));
-  totalDia.textContent = doDia.length > 0 ? quantosExercicios(doDia.length) : '';
-  tituloDia.textContent = diasComTreino.length > 0
-    ? t('Treino de {dia}', { dia: DIAS.find(dia => dia.numero === diaAtivo).completo })
-    : t('Treino do dia');
+  desenharListaDias();
   atualizarResumo();
+  semanaCartao.hidden = dias.length === 0 || comDiaAberto;
+  botaoConcluirSemana.hidden = dias.length === 0;
+  diaAberto.hidden = !comDiaAberto;
 
-  treinoVazio.hidden = diasComTreino.length > 0;
+  const doDia = comDiaAberto ? planilha.filter(item => item.dia_semana === diaAtivo) : [];
+  treino.replaceChildren(...doDia.map(criarCartaoTreino));
+  totalDia.textContent = comDiaAberto ? quantosExercicios(doDia.length) : '';
+  tituloDia.textContent = comDiaAberto
+    ? t('Treino de {dia}', { dia: DIAS.find(dia => dia.numero === diaAtivo).completo })
+    : '';
+
+  treinoVazio.hidden = dias.length > 0;
   treinoVazio.textContent = perfil?.papel === 'admin'
     ? t('Sua planilha está vazia. Monte em Admin.')
     : t('Seu treino ainda não foi montado. Fale com o admin.');
-  botaoConcluirSemana.hidden = diasComTreino.length === 0;
 }
 
 botaoConcluirSemana.addEventListener('click', () => umaPorVez(async () => {

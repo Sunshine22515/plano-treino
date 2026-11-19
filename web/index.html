@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#f1f2f4">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,700;1,800&display=swap">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/login.css">
   <link rel="stylesheet" href="css/layout.css">
@@ -105,54 +105,63 @@
 
   <main id="tela-app" class="app" hidden>
     <section id="aba-treino" aria-labelledby="titulo-semana">
-      <div class="resumo">
-        <div class="resumo-cartao">
-          <strong id="resumo-semana">1</strong>
-          <span>Semana</span>
+      <!-- Primeiro a lista de dias. O treino de um dia só abre quando o aluno toca nele. -->
+      <div id="semana-cartao">
+        <div class="semana-topo">
+          <h2 id="titulo-semana" class="titulo-pagina"></h2>
+          <p id="resumo-feitos" class="semana-andamento"></p>
+          <div id="pontos-semana" class="pontos-semana" aria-hidden="true"></div>
         </div>
-        <div class="resumo-cartao">
-          <strong id="resumo-exercicios">0</strong>
-          <span>Exercícios no dia</span>
-        </div>
-        <div class="resumo-cartao">
-          <strong id="resumo-feitos">0</strong>
-          <span>Registrados</span>
-        </div>
-      </div>
-
-      <div id="semana-cartao" class="cartao-destaque">
-        <div class="painel-topo">
-          <h2 id="titulo-semana"></h2>
-          <span class="total">Exercícios por dia</span>
-        </div>
-        <div id="dias-treino" class="barras" role="group" aria-label="Dia da semana"></div>
-      </div>
-
-      <div class="secao-topo">
-        <h2 id="titulo-dia">Treino do dia</h2>
-        <span id="total-dia" class="total"></span>
+        <ul id="dias-treino" class="lista-dias" aria-label="Dias de treino"></ul>
+        <button type="button" id="concluir-semana" class="adicionar largura-total" hidden>Concluir semana</button>
       </div>
       <p id="treino-vazio" class="vazio" hidden></p>
-      <ul id="treino" class="lista lista-cartoes"></ul>
-      <button type="button" id="concluir-semana" class="adicionar largura-total" hidden>Concluir semana</button>
+
+      <div id="dia-aberto" hidden>
+        <button type="button" id="voltar-dias" class="botao-voltar">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Voltar para a semana
+        </button>
+        <div class="secao-topo">
+          <h2 id="titulo-dia"></h2>
+          <span id="total-dia" class="total"></span>
+        </div>
+        <ul id="treino" class="lista lista-cartoes"></ul>
+      </div>
     </section>
 
-    <section id="aba-perfil" aria-labelledby="perfil-nome" hidden>
-      <p class="perfil-rotulo">Perfil</p>
-      <h2 id="perfil-nome" class="titulo-pagina"></h2>
+    <!-- O nome já aparece no topo da tela, então o Perfil começa direto pelos números. -->
+    <section id="aba-perfil" aria-labelledby="titulo-perfil" hidden>
+      <h2 id="titulo-perfil" class="titulo-pagina">Seu progresso</h2>
+
+      <div class="resumo">
+        <div class="resumo-cartao">
+          <strong id="perfil-semana">1</strong>
+          <span>Semana atual</span>
+        </div>
+        <div class="resumo-cartao">
+          <strong id="perfil-semanas">0</strong>
+          <span>Semanas treinadas</span>
+        </div>
+        <div class="resumo-cartao">
+          <strong id="perfil-sets">0</strong>
+          <span>Sets anotados</span>
+        </div>
+      </div>
 
       <div id="perfil-resumo" class="cartao-destaque perfil-resumo" hidden>
         <p id="perfil-resumo-periodo"></p>
         <strong id="perfil-resumo-valor"></strong>
         <p id="perfil-resumo-detalhe"></p>
+        <p class="nota-tabela">Compara a maior carga da primeira e da última semana registradas.</p>
       </div>
 
       <p id="progresso-vazio" class="vazio" hidden>Ainda não há cargas registradas. Seu progresso aparece aqui conforme você treina.</p>
 
       <div id="progresso-cartao" class="painel" hidden>
-        <h3 class="subtitulo">Progresso semanal</h3>
-        <div id="progresso" class="tabela-rolavel" tabindex="0" role="region" aria-label="Progressão de carga por exercício"></div>
-        <p class="nota-tabela">Compara a maior carga da primeira e da última semana registradas.</p>
+        <h3 class="subtitulo">Por músculo</h3>
+        <p class="nota-tabela">Toque num grupo para ver as cargas de cada semana.</p>
+        <div id="progresso" class="lista-grupos-progresso"></div>
       </div>
 
       <!-- Sair fica no fim do Perfil, longe do treino, para ninguém sair da conta sem querer. -->
@@ -220,9 +229,7 @@
         <h3 class="subtitulo">Treino</h3>
         <label class="config-opcao"><input type="checkbox" id="config-anterior"> <span>Mostrar a semana passada nos campos</span></label>
         <label class="config-opcao"><input type="checkbox" id="config-execucao"> <span>Mostrar o botão de execução</span></label>
-        <label class="config-opcao"><input type="checkbox" id="config-confirmar"> <span>Pedir confirmação ao concluir a semana</span></label>
-        <label class="config-opcao"><input type="checkbox" id="config-descanso"> <span>Começar o descanso sozinho ao anotar as reps</span></label>
-      </div>
+        <label class="config-opcao"><input type="checkbox" id="config-confirmar"> <span>Pedir confirmação ao concluir a semana</span></label>      </div>
 
       <div id="config-admin" class="config-grupo" hidden>
         <h3 class="subtitulo">Planilha (admin)</h3>
@@ -250,7 +257,7 @@
       <div class="config-grupo">
         <h3 class="subtitulo">Sobre</h3>
         <dl class="config-sobre">
-          <dt>Versão</dt><dd>0.7.0</dd>
+          <dt>Versão</dt><dd>0.8.0</dd>
           <dt>Fotos de execução</dt><dd>Free Exercise DB, domínio público</dd>
           <dt>Código</dt><dd><a href="https://github.com/Sunshine22515/plano-treino" target="_blank" rel="noopener">github.com/Sunshine22515/plano-treino</a></dd>
         </dl>
@@ -286,7 +293,7 @@
     </nav>
   </main>
 
-  <footer class="rodape">v0.7.0</footer>
+  <footer class="rodape">v0.8.0</footer>
 
   <!-- Janela com as fotos que mostram a execução do exercício. -->
   <dialog id="janela-demonstracao" class="janela" aria-labelledby="demonstracao-titulo">
