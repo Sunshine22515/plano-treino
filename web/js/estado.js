@@ -9,6 +9,8 @@ let series = [];
 let notas = [];
 let notasAlvo = [];
 let abaAtiva = 'treino';
+// Para onde o botão voltar leva ao sair das Configurações.
+let abaAntesDaConfig = 'treino';
 // Nenhum dia aberto ao entrar: o aluno escolhe o dia na lista.
 let diaAtivo = null;
 let usuariosAdmin = [];

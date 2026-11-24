@@ -3,6 +3,9 @@
 // --- Telas ---
 
 function mostrarAba(nome) {
+  if (nome === 'config' && abaAtiva !== 'config') {
+    abaAntesDaConfig = abaAtiva;
+  }
   abaAtiva = nome;
   Object.entries(abas).forEach(([chave, elemento]) => {
     elemento.hidden = chave !== nome;

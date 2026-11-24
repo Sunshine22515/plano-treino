@@ -54,6 +54,7 @@ web/                     O app em si (é o que vai para dentro do .apk)
     admin.js             Aba Admin
     conta.js             Login, cadastro, sessão e troca de telas
     configuracoes.js     Tela de Configurações
+    navegacao.js         Botão voltar do celular
     iniciar.js           Liga o menu e inicia o app
 supabase/
   migrations/            SQL do banco, para rodar na ordem dos números

@@ -1,10 +1,11 @@
 {
   "name": "plano-treino",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "private": true,
   "description": "Monte seu plano de treino escolhendo entre vários exercícios.",
   "dependencies": {
     "@capacitor/android": "8.6.0",
+    "@capacitor/app": "8.1.2",
     "@capacitor/cli": "8.6.0",
     "@capacitor/core": "8.6.0"
   }
