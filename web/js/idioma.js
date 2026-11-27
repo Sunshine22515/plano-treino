@@ -307,7 +307,16 @@ function t(texto, valores = {}) {
 
 // Nome do exercício para mostrar na tela. Os cadastrados pelo admin ficam como foram escritos.
 function nomeExercicio(nome) {
-  return IDIOMA === 'en' ? EXERCICIOS_EM_INGLES[nome] ?? nome : nome;
+  if (IDIOMA !== 'en') {
+    return nome;
+  }
+  // "Leg press unilateral" vira "Single-side leg press".
+  const base = typeof BASE_DA_VARIACAO === 'undefined' ? null : BASE_DA_VARIACAO[nome];
+  if (base && EXERCICIOS_EM_INGLES[base]) {
+    const ingles = EXERCICIOS_EM_INGLES[base];
+    return `Single-side ${ingles.charAt(0).toLowerCase()}${ingles.slice(1)}`;
+  }
+  return EXERCICIOS_EM_INGLES[nome] ?? nome;
 }
 
 // Traduz os textos fixos da página (os que estão no index.html). Os criados pelo JS já passam por t().

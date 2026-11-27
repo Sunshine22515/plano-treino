@@ -111,7 +111,8 @@ const DEMONSTRACOES = {
 };
 
 // As duas fotos do exercício, ou nenhuma se ele não estiver na lista.
+// A versão unilateral usa as fotos do exercício de origem: o movimento é o mesmo, só que de um lado.
 function fotosDaDemonstracao(nome) {
-  const pasta = DEMONSTRACOES[nome];
+  const pasta = DEMONSTRACOES[nome] ?? DEMONSTRACOES[BASE_DA_VARIACAO[nome]];
   return pasta ? [0, 1].map(numero => `${ENDERECO_DEMONSTRACOES}${pasta}/${numero}.jpg`) : [];
 }

@@ -1,6 +1,6 @@
 {
   "name": "plano-treino",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "private": true,
   "description": "Monte seu plano de treino escolhendo entre vários exercícios.",
   "dependencies": {

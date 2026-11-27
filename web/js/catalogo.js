@@ -79,6 +79,34 @@ const GRUPOS_EXTRAS = {
   'Caminhada do fazendeiro': ['Costas']
 };
 
+// Exercícios que também podem ser feitos de um lado só (um braço ou uma perna por vez).
+// Cada um ganha uma versão "… unilateral" logo abaixo dele na lista, com o próprio histórico de cargas.
+// Os que já são de um lado só (Remada unilateral, Rosca concentrada, Afundo...) ficam de fora.
+const TEM_UNILATERAL = [
+  'Supino reto com halteres', 'Supino inclinado com halteres', 'Supino na máquina',
+  'Crossover', 'Crossover baixo', 'Peck deck',
+  'Puxada frontal', 'Pulldown', 'Remada baixa', 'Remada na máquina',
+  'Leg press', 'Cadeira extensora', 'Mesa flexora', 'Cadeira flexora',
+  'Panturrilha em pé', 'Panturrilha sentada', 'Panturrilha no leg press',
+  'Elevação pélvica', 'Ponte de glúteo', 'Stiff', 'Levantamento terra romeno',
+  'Desenvolvimento com halteres', 'Desenvolvimento na máquina', 'Elevação lateral',
+  'Elevação lateral na polia', 'Elevação frontal', 'Crucifixo inverso',
+  'Rosca scott', 'Rosca na polia', 'Rosca martelo',
+  'Tríceps corda', 'Tríceps francês',
+  'Rosca punho', 'Caminhada do fazendeiro'
+];
+
+const SUFIXO_UNILATERAL = ' unilateral';
+
+// Nome da versão unilateral → nome do exercício de origem (usado para as fotos e o nome em inglês).
+const BASE_DA_VARIACAO = Object.fromEntries(TEM_UNILATERAL.map(nome => [nome + SUFIXO_UNILATERAL, nome]));
+
 const EXERCICIOS = Object.entries(CATALOGO).flatMap(([grupo, nomes]) =>
-  nomes.map(nome => ({ nome, grupo, grupos: [grupo, ...(GRUPOS_EXTRAS[nome] ?? [])] }))
+  nomes.flatMap(nome => {
+    const exercicio = { nome, grupo, grupos: [grupo, ...(GRUPOS_EXTRAS[nome] ?? [])] };
+    if (!TEM_UNILATERAL.includes(nome)) {
+      return [exercicio];
+    }
+    return [exercicio, { ...exercicio, nome: nome + SUFIXO_UNILATERAL, base: nome }];
+  })
 );
